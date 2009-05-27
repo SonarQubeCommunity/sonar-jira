@@ -1,4 +1,4 @@
-package org.codehaus.sonar;
+package org.sonar.plugins.jira.fbassy;
 
 interface To_Jira_Constantes {
 	// Login details

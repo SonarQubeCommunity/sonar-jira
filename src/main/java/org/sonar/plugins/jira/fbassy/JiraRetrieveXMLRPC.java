@@ -1,4 +1,4 @@
-package org.codehaus.sonar;
+package org.sonar.plugins.jira.fbassy;
 
 import java.net.MalformedURLException;
 import java.net.URL;
