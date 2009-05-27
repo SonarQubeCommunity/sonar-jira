@@ -24,7 +24,7 @@ import javax.net.ssl.X509TrustManager;
 //use in local with void
 
 @SuppressWarnings({"unused","unchecked"})
-public class JiraRetrieveXMLRPC implements JiraConstantes {
+public class JiraRetrieveXMLRPC implements  JiraConstantes {
 	public static Object[] projects;
 	public static XmlRpcClient rpcClient = new XmlRpcClient();
 	public static XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();

@@ -1,6 +1,6 @@
 package org.sonar.plugins.jira.fbassy;
 
-interface To_Jira_Constantes {
+interface JiraConstantes {
 	// Login details
 	static final String JIRA_URI = "https://SERVER_URL";
 	static final String RPC_PATH = "/rpc/xmlrpc";
