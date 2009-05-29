@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>sonar</artifactId>
 		<groupId>org.codehaus.sonar</groupId>
-		<version>1.9-SNAPSHOT</version>
+		<version>1.10-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -12,7 +12,7 @@
 	<artifactId>sonar-plugin-jira</artifactId>
 	<name>Jira plugin</name>
 	<packaging>jar</packaging>
-	<version>1.9-SNAPSHOT</version>
+	<version>1.10-SNAPSHOT</version>
 	<description>
 		Jira sonar plugin, retreive Jira related metrics for the jira
 		issueManagement url provided in your project pom
