@@ -15,8 +15,8 @@
         <th align="center"><h2>Status</h2></th>
       </tr>
       <tr>
-        <td><%= piechart('issues_priorities', :size => "200x90") -%></td>
-        <td><%= piechart('issues_status', :size => "200x90") -%></td>
+        <td><%= piechart(measure('issues_priorities'), :size => "200x90") -%></td>
+        <td><%= piechart(measure('issues_status'), :size => "200x90") -%></td>
       </tr>
     </table>
     <table>
@@ -25,8 +25,8 @@
         <th align="center"><h2>Resolution</h2></th>
       </tr>
       <tr>
-        <td><%= piechart('issues_type', :size => "200x90") -%></td>
-        <td><%= piechart('issues_resolution', :size => "200x90") -%></td>
+        <td><%= piechart(measure('issues_type'), :size => "200x90") -%></td>
+        <td><%= piechart(measure('issues_resolution'), :size => "200x90") -%></td>
       </tr>
     </table>
   </div>

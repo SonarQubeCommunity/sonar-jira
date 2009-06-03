@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.sonar.plugins.api.maven.ProjectContext;
+//import org.sonar.plugins.api.maven.ProjectContext;
 import org.sonar.plugins.api.maven.model.MavenPom;
 
 import static org.mockito.Mockito.*;
