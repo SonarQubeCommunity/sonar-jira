@@ -8,7 +8,6 @@
     <relativePath>../parent</relativePath>
   </parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.codehaus.sonar.plugins</groupId>
 	<artifactId>sonar-plugin-jira</artifactId>
 	<name>Jira plugin</name>
 	<packaging>jar</packaging>
