@@ -28,9 +28,7 @@
 				<artifactId>axistools-maven-plugin</artifactId>
 				<version>1.3</version>
 				<configuration>
-					<packageSpace>
-						org.sonar.plugins.jira.client
-					</packageSpace>
+					<packageSpace>org.sonar.plugins.jira.client</packageSpace>
 					<testCases>false</testCases>
 					<serverSide>false</serverSide>
 				</configuration>
@@ -42,6 +40,17 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Plugin-Class>org.sonar.plugins.jira.JiraPlugin</Plugin-Class>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 
