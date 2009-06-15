@@ -1,12 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <groupId>org.codehaus.sonar-plugins</groupId>
-    <artifactId>parent</artifactId>
-    <version>2</version>
-    <relativePath>../parent</relativePath>
-  </parent>
+	<parent>
+		<groupId>org.codehaus.sonar-plugins</groupId>
+		<artifactId>parent</artifactId>
+		<version>2</version>
+		<relativePath>../parent</relativePath>
+	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sonar-plugin-jira</artifactId>
 	<name>Jira plugin</name>
@@ -16,10 +15,10 @@
 		Jira sonar plugin, retreive Jira related metrics for the jira
 		issueManagement url provided in your project pom
 	</description>
-	
+
 	<properties>
-    <sonar.version>1.10-SNAPSHOT</sonar.version>
-  </properties>
+		<sonar.version>1.10-SNAPSHOT</sonar.version>
+	</properties>
 
 	<build>
 		<plugins>
@@ -41,16 +40,16 @@
 				</executions>
 			</plugin>
 			<plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Plugin-Class>org.sonar.plugins.jira.JiraPlugin</Plugin-Class>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Plugin-Class>org.sonar.plugins.jira.JiraPlugin</Plugin-Class>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -75,24 +74,24 @@
 			<type>test-jar</type>
 		</dependency>
 		<dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.7</version>
-      <scope>test</scope>
-    </dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.7</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-project</artifactId>
 			<scope>provided</scope>
 			<version>2.0.9</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.axis</groupId>
 			<artifactId>axis</artifactId>
