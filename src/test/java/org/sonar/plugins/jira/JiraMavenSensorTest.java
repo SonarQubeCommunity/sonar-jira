@@ -6,24 +6,21 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-//import org.sonar.plugins.api.maven.ProjectContext;
-import org.sonar.plugins.api.maven.model.MavenPom;
-
 import static org.mockito.Mockito.*;
-//import static org.mockito.Matchers.*;
+import org.sonar.api.resources.Project;
 
-public class JiraMavenCollectorTest {
+public class JiraMavenSensorTest {
 
-  private MavenPom pom;
-  private JiraMavenCollector collector;
+  private Project pom;
+  private JiraSensor collector;
   private MavenProject project;
   private IssueManagement issues;
   
   
   @Before
   public void setup() {
-    collector = new JiraMavenCollector();
-    pom = mock(MavenPom.class);
+    collector = new JiraSensor();
+    pom = mock(Project.class);
     project = mock(MavenProject.class);
     issues = mock(IssueManagement.class);
     when(pom.getMavenProject()).thenReturn(project);
@@ -44,14 +41,14 @@ public class JiraMavenCollectorTest {
   @Test
   public void testShouldCollectOnWithNoIssueManagement() {
     when(project.getIssueManagement()).thenReturn(null);
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
   }
   
   @Test
   public void testShouldCollectOnWithUnsupportedIssueManagement() {
     when(project.getIssueManagement()).thenReturn(issues);
     when(issues.getSystem()).thenReturn("unknownsystem");
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
   }
   
   @Test
@@ -59,7 +56,7 @@ public class JiraMavenCollectorTest {
     when(project.getIssueManagement()).thenReturn(issues);
     when(issues.getSystem()).thenReturn("jIrA");
     when(issues.getUrl()).thenReturn("http://jira.foo.org/browse/TEST_PROJECT");
-    assertTrue(collector.shouldCollectOn(pom));
+    assertTrue(collector.shouldExecuteOnProject(pom));
   }
   
   @Test
@@ -68,7 +65,7 @@ public class JiraMavenCollectorTest {
     when(issues.getSystem()).thenReturn("jIrA");
     when(issues.getUrl()).thenReturn("http://jira.foo.org/browse/TEST_PROJECT");
     when(pom.isRoot()).thenReturn(false);
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
   }
   
   @Test
@@ -76,12 +73,12 @@ public class JiraMavenCollectorTest {
     when(project.getIssueManagement()).thenReturn(issues);
     when(issues.getSystem()).thenReturn("jIrA");
     when(issues.getUrl()).thenReturn("http://jira.foo.org/no-browse/TEST_PROJECT");
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
     
     when(issues.getUrl()).thenReturn("http://jira.foo.org/browse/");
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
     when(issues.getUrl()).thenReturn("http://jira.foo.org/browse");
-    assertFalse(collector.shouldCollectOn(pom));
+    assertFalse(collector.shouldExecuteOnProject(pom));
   }
   
 }

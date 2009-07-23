@@ -19,16 +19,17 @@
  */
 package org.sonar.plugins.jira;
 
+import org.sonar.api.Property;
+import org.sonar.api.Properties;
+import org.sonar.api.Plugin;
+import org.sonar.api.Extension;
+
 import java.util.Arrays;
 import java.util.List;
 
-import org.sonar.plugins.api.EditableProperties;
-import org.sonar.plugins.api.EditableProperty;
-import org.sonar.plugins.api.Extension;
-import org.sonar.plugins.api.Plugin;
 
-@EditableProperties({
-	  @EditableProperty(key=JiraPlugin.JIRA_USER_AND_PASS, defaultValue = "",
+@Properties({
+	  @Property(key=JiraPlugin.JIRA_USER_AND_PASS, defaultValue = "",
 	    name = "Jira server, user and pass settings", description = "Settings to define which user will be used to retreive " +
 	    		"jira metrics for a given server I.E : jira.foo.com;foouser;testpass,jira.bar.com;baruser;pass")
 })
@@ -50,7 +51,7 @@ public class JiraPlugin implements Plugin {
   }
 
 	public List<Class<? extends Extension>> getExtensions() {
-		return Arrays.asList(JiraMetrics.class, JiraMavenCollector.class, JiraWidget.class);
+		return Arrays.asList(JiraMetrics.class, JiraSensor.class, JiraWidget.class);
 	}
 
 }

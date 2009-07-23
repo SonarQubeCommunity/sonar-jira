@@ -12,12 +12,11 @@
 	<packaging>jar</packaging>
 	<version>0.1-SNAPSHOT</version>
 	<description>
-		Jira sonar plugin, retreive Jira related metrics for the jira
-		issueManagement url provided in your project pom
+		Jira sonar plugin, retrieve Jira related metrics for the jira	issueManagement url provided in your project pom
 	</description>
 
 	<properties>
-		<sonar.version>1.10-SNAPSHOT</sonar.version>
+		<sonar.version>1.10RC1</sonar.version>
 	</properties>
 
 	<build>
@@ -62,13 +61,6 @@
 		<dependency>
 			<groupId>org.codehaus.sonar</groupId>
 			<artifactId>sonar-plugin-api</artifactId>
-			<version>${sonar.version}</version>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.sonar</groupId>
-			<artifactId>sonar-commons</artifactId>
 			<version>${sonar.version}</version>
 			<scope>test</scope>
 			<type>test-jar</type>

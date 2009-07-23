@@ -19,7 +19,7 @@
  */
 package org.sonar.plugins.jira;
 
-import org.sonar.plugins.api.web.AbstractDashboardWidget;
+import org.sonar.api.web.AbstractDashboardWidget;
 
 public class JiraWidget extends AbstractDashboardWidget {
 

@@ -30,11 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.IssueManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.plugins.api.maven.MavenCollector;
-import org.sonar.plugins.api.maven.MavenPluginHandler;
-import org.sonar.plugins.api.maven.ProjectContext;
-import org.sonar.plugins.api.maven.model.MavenPom;
-import org.sonar.plugins.api.measures.PropertiesBuilder;
+
 import org.sonar.plugins.jira.client.JiraSoapService;
 import org.sonar.plugins.jira.client.JiraSoapServiceServiceLocator;
 import org.sonar.plugins.jira.client.RemoteAuthenticationException;
@@ -44,29 +40,76 @@ import org.sonar.plugins.jira.client.RemoteFilter;
 import org.sonar.plugins.jira.client.RemoteIssue;
 import org.sonar.plugins.jira.client.RemotePermissionException;
 import org.sonar.plugins.jira.client.RemoteVersion;
+import org.sonar.api.batch.Sensor;
+import org.sonar.api.batch.SensorContext;
+import org.sonar.api.resources.Project;
+import org.sonar.api.measures.PropertiesBuilder;
 
-public class JiraMavenCollector implements MavenCollector {
+public class JiraSensor implements Sensor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JiraMavenCollector.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
   
   private JiraEntitiesLabels labels;
   private String filterDescr;
-  
+
   private int MAX_ISSUES_OUTSIDE_FILTER_SEARCH = 2500;
 
-  public Class<? extends MavenPluginHandler> dependsOnMavenPlugin(MavenPom pom) {
-    return null;
-  }
-
-  public boolean shouldCollectOn(MavenPom pom) {
-    IssueManagement manag = pom.getMavenProject().getIssueManagement();
+  public boolean shouldExecuteOnProject(Project project) {
+    IssueManagement manag = project.getMavenProject().getIssueManagement();
     if (manag != null) {
-      return manag.getSystem().equalsIgnoreCase("jira") && isValidJiraURL(manag.getUrl()) && pom.isRoot();
+      return manag.getSystem().equalsIgnoreCase("jira") && isValidJiraURL(manag.getUrl()) && project.isRoot();
     }
     return false;
   }
-  
-  private String[] getUsernameAndPass(MavenPom pom, String jiraManagmentURL) throws MalformedURLException {
+
+  public void analyse(Project project, SensorContext context) {
+    try {
+      String jiraManagmentURL = project.getMavenProject().getIssueManagement().getUrl();
+      String targetComponent = (String)project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
+      String currentVersion = getVersion(project);
+      Map<String,Integer> issuesByPriority = new HashMap<String, Integer>();
+      Map<String,Integer> issuesByStatus = new HashMap<String, Integer>();
+      Map<String,Integer> issuesByType = new HashMap<String, Integer>();
+      Map<String,Integer> issuesByResolution = new HashMap<String, Integer>();
+      Map<String,Integer> issuesByVersion = new HashMap<String, Integer>();
+      RemoteIssue[] remoteIssues = getRemoteIssues(project, jiraManagmentURL);
+      int openBugs = 0;
+      for (RemoteIssue remoteIssue : remoteIssues) {
+
+        if (filterTargetComponent(targetComponent, remoteIssue.getComponents())) {
+          boolean versionMatch = remoteIssue.getAffectsVersions().length == 0;
+          for (RemoteVersion remoteVersion : remoteIssue.getAffectsVersions()) {
+            if (currentVersion.equals(remoteVersion)) {
+              versionMatch = true;
+            }
+            incrementCountmap(remoteVersion.getName(), issuesByVersion);
+          }
+          if (!versionMatch) continue;
+          incrementCountmap(labels.getPriorityLabel(remoteIssue.getPriority()), issuesByPriority);
+          incrementCountmap(labels.getStatusLabel(remoteIssue.getStatus()), issuesByStatus);
+          incrementCountmap(labels.getTypeLabel(remoteIssue.getType()), issuesByType);
+          incrementCountmap(labels.getResolutionLabel(remoteIssue.getResolution()), issuesByResolution);
+          // bug is issue type 1 and open is status type 1
+          if (remoteIssue.getType().equals("1") && remoteIssue.getStatus().equals("1")) {
+            openBugs++;
+          }
+        }
+      }
+
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_VERSION, issuesByVersion).build());
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_PRIORITIES, issuesByPriority).build());
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_STATUS, issuesByStatus).build());
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_TYPE, issuesByType).build());
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_RESOLUTION, issuesByResolution).build());
+      context.saveMeasure(JiraMetrics.ISSUES_COUNT, new Double(remoteIssues.length));
+      context.saveMeasure(JiraMetrics.OPEN_BUGS_COUNT, new Double(openBugs));
+
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private String[] getUsernameAndPass(Project pom, String jiraManagmentURL) throws MalformedURLException {
     URL jiraServer = new URL(jiraManagmentURL);
     String serversUsersPass = (String)pom.getProperty(JiraPlugin.JIRA_USER_AND_PASS);
     if (!StringUtils.isEmpty(serversUsersPass)) {
@@ -83,7 +126,7 @@ public class JiraMavenCollector implements MavenCollector {
     return null;
   }
   
-  private RemoteIssue[] getRemoteIssues(MavenPom pom, String jiraManagmentURL) throws MalformedURLException, ServiceException, RemoteException, java.rmi.RemoteException {
+  private RemoteIssue[] getRemoteIssues(Project pom, String jiraManagmentURL) throws MalformedURLException, ServiceException, RemoteException, java.rmi.RemoteException {
     RemoteIssue[] issues = new RemoteIssue[0];
     JiraSoapServiceServiceLocator locator = new JiraSoapServiceServiceLocator();
     JiraSoapService srv = locator.getJirasoapserviceV2(getJiraServiceUrl(jiraManagmentURL));
@@ -122,54 +165,7 @@ public class JiraMavenCollector implements MavenCollector {
     return filter;
   }
 
-  public void collect(MavenPom pom, ProjectContext context) {
-    try {
-      String jiraManagmentURL = pom.getMavenProject().getIssueManagement().getUrl();
-      String targetComponent = (String)pom.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
-      String currentVersion = getVersion(pom);
-      Map<String,Integer> issuesByPriority = new HashMap<String, Integer>();
-      Map<String,Integer> issuesByStatus = new HashMap<String, Integer>();
-      Map<String,Integer> issuesByType = new HashMap<String, Integer>();
-      Map<String,Integer> issuesByResolution = new HashMap<String, Integer>();
-      Map<String,Integer> issuesByVersion = new HashMap<String, Integer>();
-      RemoteIssue[] remoteIssues = getRemoteIssues(pom, jiraManagmentURL);
-      int openBugs = 0;
-      for (RemoteIssue remoteIssue : remoteIssues) {
-        
-        if (filterTargetComponent(targetComponent, remoteIssue.getComponents())) {
-          boolean versionMatch = remoteIssue.getAffectsVersions().length == 0;
-          for (RemoteVersion remoteVersion : remoteIssue.getAffectsVersions()) {
-            if (currentVersion.equals(remoteVersion)) {
-              versionMatch = true;
-            }
-            incrementCountmap(remoteVersion.getName(), issuesByVersion);
-          }
-          if (!versionMatch) continue;
-          incrementCountmap(labels.getPriorityLabel(remoteIssue.getPriority()), issuesByPriority);
-          incrementCountmap(labels.getStatusLabel(remoteIssue.getStatus()), issuesByStatus);
-          incrementCountmap(labels.getTypeLabel(remoteIssue.getType()), issuesByType);
-          incrementCountmap(labels.getResolutionLabel(remoteIssue.getResolution()), issuesByResolution);
-          // bug is issue type 1 and open is status type 1
-          if (remoteIssue.getType().equals("1") && remoteIssue.getStatus().equals("1")) {
-            openBugs++;
-          }
-        }
-      }
-
-      context.addMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_VERSION, issuesByVersion).build());
-      context.addMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_PRIORITIES, issuesByPriority).build());
-      context.addMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_STATUS, issuesByStatus).build());
-      context.addMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_TYPE, issuesByType).build());
-      context.addMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_RESOLUTION, issuesByResolution).build());
-      context.addMeasure(JiraMetrics.ISSUES_COUNT, new Double(remoteIssues.length));
-      context.addMeasure(JiraMetrics.OPEN_BUGS_COUNT, new Double(openBugs));
-      
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-  
-  private String getVersion(MavenPom pom) {
+  private String getVersion(Project pom) {
     String version = pom.getMavenProject().getVersion();
     return version.toLowerCase().replace("-SNAPSHOT", "");
   }
@@ -220,5 +216,10 @@ public class JiraMavenCollector implements MavenCollector {
   private String getJiraProjectName(String jiraManagmentURL) {
     return jiraManagmentURL.toLowerCase().substring(jiraManagmentURL.lastIndexOf("/") + 1);
   }
+
+  public void analyze(Project project, SensorContext context) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
 
 }
