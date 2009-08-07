@@ -25,7 +25,7 @@ public class JiraWidget extends AbstractDashboardWidget {
 
   @Override
   protected String getTemplatePath() {
-    return "/jiraWidget.erb";
+    return "/org/sonar/plugins/jira/jiraWidget.erb";
   }
 
 }

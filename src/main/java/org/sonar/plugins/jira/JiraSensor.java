@@ -31,22 +31,29 @@ import org.apache.maven.model.IssueManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.sonar.plugins.jira.client.JiraSoapService;
-import org.sonar.plugins.jira.client.JiraSoapServiceServiceLocator;
-import org.sonar.plugins.jira.client.RemoteAuthenticationException;
-import org.sonar.plugins.jira.client.RemoteComponent;
-import org.sonar.plugins.jira.client.RemoteException;
-import org.sonar.plugins.jira.client.RemoteFilter;
-import org.sonar.plugins.jira.client.RemoteIssue;
-import org.sonar.plugins.jira.client.RemotePermissionException;
-import org.sonar.plugins.jira.client.RemoteVersion;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.resources.Project;
 import org.sonar.api.measures.PropertiesBuilder;
+import org.sonar.api.utils.StaxParser;
 
 public class JiraSensor implements Sensor {
 
+  @Override
+  public void analyse(Project project, SensorContext context) {
+
+    String filter = (String)project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
+    //StaxParser parser = new StaxParser();
+
+  }
+
+  @Override
+  public boolean shouldExecuteOnProject(Project project) {
+    return false;
+  }
+
+
+/*
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
   
   private JiraEntitiesLabels labels;
@@ -220,6 +227,6 @@ public class JiraSensor implements Sensor {
   public void analyze(Project project, SensorContext context) {
     //To change body of implemented methods use File | Settings | File Templates.
   }
-
+*/
 
 }

@@ -26,16 +26,21 @@ import org.sonar.api.Extension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 
 @Properties({
-	  @Property(key=JiraPlugin.JIRA_USER_AND_PASS, defaultValue = "",
-	    name = "Jira server, user and pass settings", description = "Settings to define which user will be used to retreive " +
-	    		"jira metrics for a given server I.E : jira.foo.com;foouser;testpass,jira.bar.com;baruser;pass")
+	  @Property(
+      key = JiraPlugin.JIRA_COMPONENT_FILTER,
+      defaultValue = "",
+	    name = "Jira filter",
+      project = true,
+      module = true,
+      global = true
+    )
 })
 public class JiraPlugin implements Plugin {
 	
-  public final static String JIRA_USER_AND_PASS = "sonar.jira.serveruserpass.keys";
   public final static String JIRA_COMPONENT_FILTER = "sonar.jira.component.filter";
  
 	public String getDescription() {
@@ -51,7 +56,11 @@ public class JiraPlugin implements Plugin {
   }
 
 	public List<Class<? extends Extension>> getExtensions() {
-		return Arrays.asList(JiraMetrics.class, JiraSensor.class, JiraWidget.class);
+    List<Class<? extends Extension>> list = new ArrayList<Class<? extends Extension>>();
+    list.add(JiraMetrics.class);
+    list.add(JiraSensor.class);
+    list.add(JiraWidget.class);
+    return list;
 	}
 
 }
