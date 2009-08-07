@@ -19,35 +19,18 @@
  */
 package org.sonar.plugins.jira;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.model.IssueManagement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.resources.Project;
-import org.sonar.api.measures.PropertiesBuilder;
-import org.sonar.api.utils.StaxParser;
 
 public class JiraSensor implements Sensor {
-
-  @Override
   public void analyse(Project project, SensorContext context) {
 
-    String filter = (String)project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
+    String filter = (String) project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
     //StaxParser parser = new StaxParser();
 
   }
 
-  @Override
   public boolean shouldExecuteOnProject(Project project) {
     return false;
   }
