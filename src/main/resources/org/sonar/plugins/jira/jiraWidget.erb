@@ -1,33 +1,11 @@
 <div class="dashbox">
-  <h3><span title="Current issues">Issues measures</span></h3>
-  <br/>
-  <p>
-    <%= format_measure('issues_count', :suffix => ' issues') -%>
-  </p>
-</div>
-<div class="dashbox">
-  <h3>Issues distributions</h3>
-  <div class="yui-u">
-    <br/>
-    <table>
-      <tr>
-        <th align="center"><h2>Priorities</h2></th>
-        <th align="center"><h2>Status</h2></th>
-      </tr>
-      <tr>
-        <td><%= piechart(measure('issues_priorities'), :size => "200x90") -%></td>
-        <td><%= piechart(measure('issues_status'), :size => "200x90") -%></td>
-      </tr>
-    </table>
-    <table>
-      <tr>
-        <th align="center"><h2>Type</h2></th>
-        <th align="center"><h2>Resolution</h2></th>
-      </tr>
-      <tr>
-        <td><%= piechart(measure('issues_type'), :size => "200x90") -%></td>
-        <td><%= piechart(measure('issues_resolution'), :size => "200x90") -%></td>
-      </tr>
-    </table>
-  </div>
+  <p class="title">Jira</p>
+
+  <% if measure('issues_count') %>
+    <span class="big">
+      <p><%= format_measure('issues_count', :suffix => ' issues') -%></p>
+    </span>
+  <% else %>
+    No filter recorded.
+  <% end %>
 </div>

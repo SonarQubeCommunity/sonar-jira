@@ -1,7 +1,7 @@
 package org.sonar.plugins.jira;
 
-import org.apache.maven.model.IssueManagement;
-import org.apache.maven.project.MavenProject;
+//import org.apache.maven.model.IssueManagement;
+//import org.apache.maven.project.MavenProject;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -13,8 +13,8 @@ public class JiraMavenSensorTest {
 
   private Project pom;
   private JiraSensor collector;
-  private MavenProject project;
-  private IssueManagement issues;
+  //private MavenProject project;
+  //private IssueManagement issues;
 
   @Test
   public void test(){
