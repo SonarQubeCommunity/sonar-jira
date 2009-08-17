@@ -27,6 +27,10 @@ import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.resources.Project;
 import org.sonar.api.measures.PropertiesBuilder;
+import org.sonar.api.measures.Measure;
+import org.sonar.api.utils.SonarException;
+import org.codehaus.swizzle.jira.JiraRss;
+import org.codehaus.swizzle.jira.Issue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +40,10 @@ public class JiraSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
   public void analyse(Project project, SensorContext context) {
+    
     String filter = (String) project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
     if (StringUtils.isNotEmpty(filter)){
+/*
       ServerHttpClient serverHttpClient = new ServerHttpClient(filter);
       String xml = serverHttpClient.getContent();
 
@@ -51,7 +57,22 @@ public class JiraSensor implements Sensor {
       }
 
       context.saveMeasure(JiraMetrics.ISSUES_COUNT, nbIssues);      
-      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_PRIORITIES, issuesByPriority).build());      
+      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_PRIORITIES, issuesByPriority).build());
+*/
+
+      try {
+        JiraRss jirarss = new JiraRss(filter);
+        double nbIssues = jirarss.getIssues().size();
+
+        Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, nbIssues);
+        // FIXME add filter url to the url column of the measure, and add a link on the number of isssues to it in the widget
+        context.saveMeasure(measure);
+
+      } catch (Exception e) {
+        throw new JiraParserException("Can't read jira rss", e);
+      }
+
+
     } else {
       LOG.warn("No filter recorder!");
     }

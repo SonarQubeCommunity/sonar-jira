@@ -1,9 +1,9 @@
 <div class="dashbox">
   <p class="title">Jira</p>
 
-  <% if measure('issues_count') %>
+  <% if measure('open_issues') %>
     <span class="big">
-      <p><%= format_measure('issues_count', :suffix => ' issues') -%></p>
+      <p><%= format_measure('open_issues', :suffix => ' issues') -%></p>
     </span>
   <% else %>
     No filter recorded.
