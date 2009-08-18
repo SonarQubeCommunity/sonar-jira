@@ -21,21 +21,21 @@ package org.sonar.plugins.jira;
 
 import org.sonar.api.utils.SonarException;
 
-public class JiraParserException extends SonarException{
+public class JiraException extends SonarException{
 
-  public JiraParserException() {
+  public JiraException() {
     super();
   }
 
-  public JiraParserException(String s) {
+  public JiraException(String s) {
     super(s);
   }
 
-  public JiraParserException(String s, Throwable throwable) {
+  public JiraException(String s, Throwable throwable) {
     super(s, throwable);
   }
 
-  public JiraParserException(Throwable throwable) {
+  public JiraException(Throwable throwable) {
     super(throwable);
   }
 }

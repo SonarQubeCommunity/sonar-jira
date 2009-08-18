@@ -19,57 +19,37 @@
  */
 package org.sonar.plugins.jira;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
-import org.sonar.api.resources.Project;
-import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.measures.Measure;
-import org.sonar.api.utils.SonarException;
-import org.codehaus.swizzle.jira.JiraRss;
-import org.codehaus.swizzle.jira.Issue;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.sonar.api.resources.Project;
 
 public class JiraSensor implements Sensor {
 
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
   public void analyse(Project project, SensorContext context) {
-    
-    String filter = (String) project.getProperty(JiraPlugin.JIRA_COMPONENT_FILTER);
-    if (StringUtils.isNotEmpty(filter)){
-/*
-      ServerHttpClient serverHttpClient = new ServerHttpClient(filter);
-      String xml = serverHttpClient.getContent();
 
-      JiraXMLParser jiraXMLParser = new JiraXMLParser(IOUtils.toInputStream(xml));
-      jiraXMLParser.parse();
+    String serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
+    String projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
+    String login = (String) project.getProperty(JiraPlugin.LOGIN);
+    String password = (String) project.getProperty(JiraPlugin.PASSWORD);
+    String urlParams = (String) project.getProperty(JiraPlugin.URL_PARAMS);
 
-      double nbIssues = jiraXMLParser.getNumberIssues();
-      Map<String,Integer> issuesByPriority = new HashMap<String, Integer>();
-      for (String priority : jiraXMLParser.getPrioritiesName()){
-        issuesByPriority.put(priority, jiraXMLParser.getPriorities().getCount(priority));
-      }
-
-      context.saveMeasure(JiraMetrics.ISSUES_COUNT, nbIssues);      
-      context.saveMeasure(new PropertiesBuilder(JiraMetrics.ISSUES_PRIORITIES, issuesByPriority).build());
-*/
-
+    if (StringUtils.isNotEmpty(serverURL)) {
       try {
-        JiraRss jirarss = new JiraRss(filter);
-        double nbIssues = jirarss.getIssues().size();
+        JiraIssuesReader jiraIssuesReader = new JiraIssuesReader(serverURL, projectKey, login, password, urlParams);
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesReader.getIssues());
 
-        Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, nbIssues);
+        Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, (double)jiraPriorities.getTotalSize());
         // FIXME add filter url to the url column of the measure, and add a link on the number of isssues to it in the widget
         context.saveMeasure(measure);
 
       } catch (Exception e) {
-        throw new JiraParserException("Can't read jira rss", e);
+        throw new JiraException("Can't read jira rss", e);
       }
 
 

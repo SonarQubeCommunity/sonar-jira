@@ -60,7 +60,7 @@ public class JiraXMLParser {
     try {
       collectData();
     } catch (XMLStreamException e) {
-      throw new JiraParserException("Can't parse jira xml data");
+      throw new JiraException("Can't parse jira xml data");
     }
   }
 
