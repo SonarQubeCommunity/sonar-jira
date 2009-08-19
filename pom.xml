@@ -1,22 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
     <version>2</version>
     <relativePath>../parent</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>sonar-plugin-jira</artifactId>
-  <name>Jira plugin</name>
-  <packaging>jar</packaging>
   <version>0.1-SNAPSHOT</version>
-  <description>
-    Jira sonar plugin, retrieve Jira related metrics for the jira issueManagement url provided in your project pom
-  </description>
+  <name>Jira plugin</name>
 
   <properties>
-    <sonar.version>1.10</sonar.version>
+    <sonar.version>1.11-SNAPSHOT</sonar.version>
   </properties>
 
   <build>

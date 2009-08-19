@@ -2,10 +2,13 @@
   <p class="title">Jira</p>
 
   <% if measure('open_issues') %>
+
     <span class="big">
       <p><%= format_measure('open_issues', :suffix => ' issues') -%></p>
+      <p><%= measure('open_issues').url -%"></p>
     </span>
+  
   <% else %>
-    No filter recorded.
+    No Data
   <% end %>
 </div>

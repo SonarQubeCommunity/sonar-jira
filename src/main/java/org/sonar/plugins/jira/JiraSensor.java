@@ -42,11 +42,11 @@ public class JiraSensor implements Sensor {
 
     if (StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey)) {
       try {
-        JiraIssuesReader jiraIssuesReader = new JiraIssuesReader(serverURL, projectKey, login, password, urlParams);
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesReader.getIssues());
+        JiraIssuesCollector jiraIssuesCollector = new JiraIssuesCollector(serverURL, projectKey, login, password, urlParams);
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesCollector.getIssues());
 
         Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, (double)jiraPriorities.getTotalSize());
-        // FIXME add filter url to the url column of the measure, and add a link on the number of isssues to it in the widget
+        measure.setUrl(jiraIssuesCollector.getWebUrl());
         context.saveMeasure(measure);
 
       } catch (Exception e) {

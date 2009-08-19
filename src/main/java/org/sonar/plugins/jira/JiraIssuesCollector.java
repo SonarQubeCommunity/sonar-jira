@@ -31,11 +31,12 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
-public class JiraIssuesReader {
+public class JiraIssuesCollector {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JiraIssuesReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JiraIssuesCollector.class);
 
   private static final String RPC_PATH = "/rpc/xmlrpc";
+  private static final String WEB_PATH = "/secure/IssueNavigator.jspa";
   private static final String XML_PATH = "/sr/jira.issueviews:searchrequest-xml/temp/SearchRequest.xml";
   private static final String XML_PATH_OPT = "tempMax=1000";
   private static final String PID_OPT = "pid";
@@ -48,12 +49,35 @@ public class JiraIssuesReader {
   private String projectName;
 
 
-  public JiraIssuesReader(String serverUrl, String projectName, String login, String password, String urlParams) {
+  public JiraIssuesCollector(String serverUrl, String projectName, String login, String password, String urlParams) {
     this.serverUrl = serverUrl;
     this.login = login;
     this.password = password;
     this.projectName = projectName;
     this.urlParams = urlParams;
+  }
+
+  public Collection getIssues() {
+    try {
+      String jiraXmlUrl = getJiraXmlUrl();
+      LOG.info("Jira XML url is {}", jiraXmlUrl);
+
+      JiraRss jirarss = new JiraRss(getJiraXmlUrl());
+
+      return CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
+        public Object transform(Object o) {
+          Issue issue = (Issue) o;
+          return issue.getPriority().getName();
+        }
+      });
+
+    } catch (Exception e) {
+      throw new JiraException("Problem accessing jira rss filter", e);
+    }
+  }
+
+  private String getJiraXmlUrl() {
+    return serverUrl + XML_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams + "&" + XML_PATH_OPT;
   }
 
   private int getProjectId() {
@@ -83,27 +107,8 @@ public class JiraIssuesReader {
     return serverUrl + RPC_PATH;
   }
 
-  public Collection getIssues() {
-    try {
-      String jiraXmlUrl = getJiraXmlUrl();
-      LOG.info("Jira XML url is {}", jiraXmlUrl);
-
-      JiraRss jirarss = new JiraRss(getJiraXmlUrl());
-
-      return CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
-        public Object transform(Object o) {
-          Issue issue = (Issue) o;
-          return issue.getPriority().getName();
-        }
-      });
-
-    } catch (Exception e) {
-      throw new JiraException("Problem accessing jira rss filter", e);
-    }
-  }
-
-  private String getJiraXmlUrl() {
-    return serverUrl + XML_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams + "&" + XML_PATH_OPT;
+  public String getWebUrl(){
+    return serverUrl + WEB_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams;
   }
 
 
