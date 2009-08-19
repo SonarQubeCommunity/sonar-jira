@@ -72,7 +72,7 @@ public class JiraIssuesReader {
 
   private Project getProject(String projectName) throws Exception {
     String jiraRpcUrl = getJiraRpcUrl();
-    LOG.debug("Jira RPC url is {}", jiraRpcUrl);
+    LOG.info("Jira RPC url is {}", jiraRpcUrl);
 
     Jira jira = new Jira(jiraRpcUrl);
     jira.login(login, password);
@@ -86,8 +86,7 @@ public class JiraIssuesReader {
   public Collection getIssues() {
     try {
       String jiraXmlUrl = getJiraXmlUrl();
-      LOG.debug("Jira XML url is {}", jiraXmlUrl);
-      System.out.println(jiraXmlUrl);
+      LOG.info("Jira XML url is {}", jiraXmlUrl);
 
       JiraRss jirarss = new JiraRss(getJiraXmlUrl());
 

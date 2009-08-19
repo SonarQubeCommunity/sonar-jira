@@ -63,7 +63,7 @@ import java.util.List;
   ),
   @Property(
     key = JiraPlugin.URL_PARAMS,
-    defaultValue = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC",
+    defaultValue = JiraPlugin.DEFAULT_URL_PARAMS,
     name = "Jira param url",
     project = true,
     module = true,
@@ -78,6 +78,8 @@ public class JiraPlugin implements Plugin {
   public final static String LOGIN = "sonar.jira.login";
   public final static String PASSWORD = "sonar.jira.password";
   public final static String URL_PARAMS = "sonar.jira.url.param";
+
+  public final static String DEFAULT_URL_PARAMS = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
 
   public String getDescription() {
     return "Jira plugin, collect metrics on the Jira server defined in the project pom";

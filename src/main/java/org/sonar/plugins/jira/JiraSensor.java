@@ -38,8 +38,9 @@ public class JiraSensor implements Sensor {
     String login = (String) project.getProperty(JiraPlugin.LOGIN);
     String password = (String) project.getProperty(JiraPlugin.PASSWORD);
     String urlParams = (String) project.getProperty(JiraPlugin.URL_PARAMS);
+    urlParams = urlParams != null ? urlParams : JiraPlugin.DEFAULT_URL_PARAMS;
 
-    if (StringUtils.isNotEmpty(serverURL)) {
+    if (StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey)) {
       try {
         JiraIssuesReader jiraIssuesReader = new JiraIssuesReader(serverURL, projectKey, login, password, urlParams);
         JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesReader.getIssues());
@@ -49,12 +50,12 @@ public class JiraSensor implements Sensor {
         context.saveMeasure(measure);
 
       } catch (Exception e) {
-        throw new JiraException("Can't read jira rss", e);
+        throw new JiraException("Error reading jira issues", e);
       }
 
 
     } else {
-      LOG.warn("No filter recorder!");
+      LOG.warn("Server url or project key is needed and they are not present.");
     }
 
   }

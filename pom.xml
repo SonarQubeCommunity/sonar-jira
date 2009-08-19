@@ -45,8 +45,10 @@
             <configuration>
               <artifactSet>
                 <includes>
-                  <include>xmlrpc:xmlrpc</include>
+                  <include>xmlrpc:xmlrpc-client</include>
                   <include>org.codehaus.swizzle:swizzle-jira</include>
+                  <include>org.apache.xmlrpc:xmlrpc-common</include>
+                  <include>org.apache.ws.commons:ws-commons-util</include>
                 </includes>
               </artifactSet>
             </configuration>
@@ -95,9 +97,19 @@
     </dependency>
     <dependency>
       <groupId>xmlrpc</groupId>
-      <artifactId>xmlrpc</artifactId>
-      <version>1.2-b1</version>
+      <artifactId>xmlrpc-client</artifactId>
+      <version>3.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.xmlrpc</groupId>
+      <artifactId>xmlrpc-common</artifactId>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons</groupId>
+      <artifactId>ws-commons-util</artifactId>
+      <version>1.0.1</version>
+    </dependency>    
   </dependencies>
 
   <repositories>
@@ -120,11 +132,12 @@
         <enabled>true</enabled>
       </snapshots>
       <releases>
-        <enabled>true</enabled>  <!-- Workaround for MNG-2974, see note below -->
+        <enabled>true</enabled>
+        <!-- Workaround for MNG-2974, see note below -->
       </releases>
     </pluginRepository>
   </pluginRepositories>
-  
+
 
   <scm>
     <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
