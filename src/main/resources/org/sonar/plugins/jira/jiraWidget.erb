@@ -4,8 +4,7 @@
   <% if measure('open_issues') %>
 
     <span class="big">
-      <p><%= format_measure('open_issues', :suffix => ' issues') -%></p>
-      <p><%= measure('open_issues').url -%"></p>
+      <p><a href='<%= measure('open_issues').url -%>'><%= format_measure('open_issues', :suffix => ' issues') -%></a></p>
     </span>
   
   <% else %>
