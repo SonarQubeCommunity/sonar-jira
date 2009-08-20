@@ -52,10 +52,25 @@ public class JiraSensor implements Sensor {
         LOG.info("Accessing Jira RPC with url {}", jiraIssuesCollector.getJiraRpcUrl());
 
         JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesCollector.getIssues());
-        
-        Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, (double)jiraPriorities.getTotalSize());
-        measure.setUrl(jiraIssuesCollector.getWebUrl());
-        context.saveMeasure(measure);
+
+        Measure totalOpenIssuesMeasure = new Measure(JiraMetrics.OPEN_ISSUES, (double) jiraPriorities.getTotalSize());
+        totalOpenIssuesMeasure.setUrl(jiraIssuesCollector.getWebUrl());
+        context.saveMeasure(totalOpenIssuesMeasure);
+
+        Measure blockerIssuesMeasure = new Measure(JiraMetrics.BLOCKER_OPEN_ISSUES, (double) jiraPriorities.getBlockerSize());
+        context.saveMeasure(blockerIssuesMeasure);
+
+        Measure criticalIssuesMeasure = new Measure(JiraMetrics.CRITICAL_OPEN_ISSUES, (double) jiraPriorities.getCriticalSize());
+        context.saveMeasure(criticalIssuesMeasure);
+
+        Measure majorIssuesMeasure = new Measure(JiraMetrics.MAJOR_OPEN_ISSUES, (double) jiraPriorities.getMajorSize());
+        context.saveMeasure(majorIssuesMeasure);
+
+        Measure minorIssuesMeasure = new Measure(JiraMetrics.MINOR_OPEN_ISSUES, (double) jiraPriorities.getMinorSize());
+        context.saveMeasure(minorIssuesMeasure);
+
+        Measure trivalIssuesMeasure = new Measure(JiraMetrics.TRIVIAL_OPEN_ISSUES, (double) jiraPriorities.getTrivialSize());
+        context.saveMeasure(trivalIssuesMeasure);
 
       } catch (Exception e) {
         LOG.error("Error accessing Jira web service, please verify the parameters");
@@ -66,7 +81,7 @@ public class JiraSensor implements Sensor {
 
   }
 
-  private boolean isMandatoryParametersNotEmpty(){
+  private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey) &&
       StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
   }

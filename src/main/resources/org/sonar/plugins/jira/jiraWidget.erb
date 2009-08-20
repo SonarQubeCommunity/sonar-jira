@@ -6,6 +6,11 @@
     <span class="big">
       <p><a href='<%= measure('open_issues').url -%>'><%= format_measure('open_issues', :suffix => ' issues') -%></a></p>
     </span>
+    <p><%= format_measure('blocker_open_issues', :suffix => ' blocker') -%></p>
+    <p><%= format_measure('critical_open_issues', :suffix => ' critical') -%></p>
+    <p><%= format_measure('major_open_issues', :suffix => ' major') -%></p>
+    <p><%= format_measure('minor_open_issues', :suffix => ' minor') -%></p>
+    <p><%= format_measure('trivial_open_issues', :suffix => ' trivial') -%></p>
   
   <% else %>
     No Data
