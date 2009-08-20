@@ -48,7 +48,6 @@ public class JiraIssuesCollector {
   private String password;
   private String projectName;
 
-
   public JiraIssuesCollector(String serverUrl, String projectName, String login, String password, String urlParams) {
     this.serverUrl = serverUrl;
     this.login = login;
@@ -59,9 +58,6 @@ public class JiraIssuesCollector {
 
   public Collection getIssues() {
     try {
-      String jiraXmlUrl = getJiraXmlUrl();
-      LOG.info("Jira XML url is {}", jiraXmlUrl);
-
       JiraRss jirarss = new JiraRss(getJiraXmlUrl());
 
       return CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
@@ -72,7 +68,7 @@ public class JiraIssuesCollector {
       });
 
     } catch (Exception e) {
-      throw new JiraException("Problem accessing jira rss filter", e);
+      throw new JiraException("Problem accessing jira web services", e);
     }
   }
 
@@ -83,27 +79,24 @@ public class JiraIssuesCollector {
   private int getProjectId() {
     try {
       Project project = getProject(projectName);
-      int id = project.getId();
-      LOG.debug("Jira project Id is {}", id);
-      return id;
+      return project.getId();
 
     } catch (MalformedURLException e) {
+      LOG.error("Bad URL : {}, returned error is : ", getJiraRpcUrl(), e.getMessage());
       throw new JiraException("Problem with jira url" + getJiraRpcUrl(), e);
     } catch (Exception e) {
+      LOG.error("Problem accessing jira rpc : {}", e.getMessage());
       throw new JiraException("Problem accessing jira rpc", e);
     }
   }
 
   private Project getProject(String projectName) throws Exception {
-    String jiraRpcUrl = getJiraRpcUrl();
-    LOG.info("Jira RPC url is {}", jiraRpcUrl);
-
-    Jira jira = new Jira(jiraRpcUrl);
+    Jira jira = new Jira(getJiraRpcUrl());
     jira.login(login, password);
     return jira.getProject(projectName);
   }
 
-  private String getJiraRpcUrl() {
+  public String getJiraRpcUrl() {
     return serverUrl + RPC_PATH;
   }
 

@@ -31,33 +31,44 @@ public class JiraSensor implements Sensor {
 
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
+  private String serverURL;
+  private String projectKey;
+  private String login;
+  private String password;
+
+
   public void analyse(Project project, SensorContext context) {
 
-    String serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
-    String projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
-    String login = (String) project.getProperty(JiraPlugin.LOGIN);
-    String password = (String) project.getProperty(JiraPlugin.PASSWORD);
+    this.serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
+    this.projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
+    this.login = (String) project.getProperty(JiraPlugin.LOGIN);
+    this.password = (String) project.getProperty(JiraPlugin.PASSWORD);
     String urlParams = (String) project.getProperty(JiraPlugin.URL_PARAMS);
     urlParams = urlParams != null ? urlParams : JiraPlugin.DEFAULT_URL_PARAMS;
 
-    if (StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey)) {
+    if (isMandatoryParametersNotEmpty()) {
       try {
         JiraIssuesCollector jiraIssuesCollector = new JiraIssuesCollector(serverURL, projectKey, login, password, urlParams);
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesCollector.getIssues());
+        LOG.info("Accessing Jira RPC with url {}", jiraIssuesCollector.getJiraRpcUrl());
 
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesCollector.getIssues());
+        
         Measure measure = new Measure(JiraMetrics.OPEN_ISSUES, (double)jiraPriorities.getTotalSize());
         measure.setUrl(jiraIssuesCollector.getWebUrl());
         context.saveMeasure(measure);
 
       } catch (Exception e) {
-        throw new JiraException("Error reading jira issues", e);
+        LOG.error("Error accessing Jira web service, please verify the parameters");
       }
-
-
     } else {
-      LOG.warn("Server url or project key is needed and they are not present.");
+      LOG.error("The server url, the project key, the login and the password must not be empty.");
     }
 
+  }
+
+  private boolean isMandatoryParametersNotEmpty(){
+    return StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey) &&
+      StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
   }
 
   public boolean shouldExecuteOnProject(Project project) {
