@@ -35,60 +35,63 @@ public class JiraSensor implements Sensor {
   private String projectKey;
   private String login;
   private String password;
-
+  private String urlParams;
 
   public void analyse(Project project, SensorContext context) {
+    initParams(project);
+    if (isMandatoryParametersNotEmpty()) {
+      try {
+        JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
+        jiraWebService.init();
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getIssues());
+        saveMeasures(context, jiraWebService, jiraPriorities);
 
+      } catch (Exception e) {
+        LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
+      }
+    } else {
+      LOG.error("The server url, the project key, the login and the password must not be empty.");
+    }
+  }
+
+  private void initParams(Project project){
     this.serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
     this.projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
     this.login = (String) project.getProperty(JiraPlugin.LOGIN);
     this.password = (String) project.getProperty(JiraPlugin.PASSWORD);
     String urlParams = (String) project.getProperty(JiraPlugin.URL_PARAMS);
-    urlParams = urlParams != null ? urlParams : JiraPlugin.DEFAULT_URL_PARAMS;
-
-    if (isMandatoryParametersNotEmpty()) {
-      try {
-        JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
-        LOG.info("Accessing Jira web service with url {}", jiraWebService.getJiraRpcUrl());
-
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getIssues());
-
-        Measure totalOpenIssuesMeasure = new Measure(JiraMetrics.OPEN_ISSUES, (double) jiraPriorities.getTotalSize());
-        totalOpenIssuesMeasure.setUrl(jiraWebService.getWebUrl());
-        context.saveMeasure(totalOpenIssuesMeasure);
-
-        Measure blockerIssuesMeasure = new Measure(JiraMetrics.BLOCKER_OPEN_ISSUES, (double) jiraPriorities.getBlockerSize());
-        blockerIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getBlockerIndex()));
-        context.saveMeasure(blockerIssuesMeasure);
-
-        Measure criticalIssuesMeasure = new Measure(JiraMetrics.CRITICAL_OPEN_ISSUES, (double) jiraPriorities.getCriticalSize());
-        criticalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getCriticalIndex()));
-        context.saveMeasure(criticalIssuesMeasure);
-
-        Measure majorIssuesMeasure = new Measure(JiraMetrics.MAJOR_OPEN_ISSUES, (double) jiraPriorities.getMajorSize());
-        majorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMajorIndex()));
-        context.saveMeasure(majorIssuesMeasure);
-
-        Measure minorIssuesMeasure = new Measure(JiraMetrics.MINOR_OPEN_ISSUES, (double) jiraPriorities.getMinorSize());
-        minorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMinorIndex()));
-        context.saveMeasure(minorIssuesMeasure);
-
-        Measure trivalIssuesMeasure = new Measure(JiraMetrics.TRIVIAL_OPEN_ISSUES, (double) jiraPriorities.getTrivialSize());
-        trivalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getTrivialIndex()));
-        context.saveMeasure(trivalIssuesMeasure);
-
-      } catch (Exception e) {
-        LOG.error("Error accessing Jira web service, please verify the parameters");
-      }
-    } else {
-      LOG.error("The server url, the project key, the login and the password must not be empty.");
-    }
-
+    this.urlParams = urlParams != null ? urlParams : JiraPlugin.DEFAULT_URL_PARAMS;
   }
 
   private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey) &&
       StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
+  }
+
+  private void saveMeasures(SensorContext context, JiraWebService jiraWebService, JiraPriorities jiraPriorities) {
+    Measure totalOpenIssuesMeasure = new Measure(JiraMetrics.OPEN_ISSUES, (double) jiraPriorities.getTotalSize());
+    totalOpenIssuesMeasure.setUrl(jiraWebService.getWebUrl());
+    context.saveMeasure(totalOpenIssuesMeasure);
+
+    Measure blockerIssuesMeasure = new Measure(JiraMetrics.BLOCKER_OPEN_ISSUES, (double) jiraPriorities.getBlockerSize());
+    blockerIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getBlockerIndex()));
+    context.saveMeasure(blockerIssuesMeasure);
+
+    Measure criticalIssuesMeasure = new Measure(JiraMetrics.CRITICAL_OPEN_ISSUES, (double) jiraPriorities.getCriticalSize());
+    criticalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getCriticalIndex()));
+    context.saveMeasure(criticalIssuesMeasure);
+
+    Measure majorIssuesMeasure = new Measure(JiraMetrics.MAJOR_OPEN_ISSUES, (double) jiraPriorities.getMajorSize());
+    majorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMajorIndex()));
+    context.saveMeasure(majorIssuesMeasure);
+
+    Measure minorIssuesMeasure = new Measure(JiraMetrics.MINOR_OPEN_ISSUES, (double) jiraPriorities.getMinorSize());
+    minorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMinorIndex()));
+    context.saveMeasure(minorIssuesMeasure);
+
+    Measure trivalIssuesMeasure = new Measure(JiraMetrics.TRIVIAL_OPEN_ISSUES, (double) jiraPriorities.getTrivialSize());
+    trivalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getTrivialIndex()));
+    context.saveMeasure(trivalIssuesMeasure);
   }
 
   public boolean shouldExecuteOnProject(Project project) {

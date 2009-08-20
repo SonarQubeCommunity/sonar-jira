@@ -30,12 +30,20 @@ public class JiraPriorities {
   private Bag bag;
 
   public JiraPriorities(Collection priorities) {
+    initPrioritiesBag(priorities);
+  }
+
+  private void initPrioritiesBag(Collection priorities){
     bag = new HashBag();
     for (Object priorityObj : priorities) {
       String currentPriority = (String) priorityObj;
-      Priority priority = Priority.valueOf(StringUtils.uncapitalize(currentPriority));
+      Priority priority = getPriority(currentPriority);
       bag.add(priority);
     }
+  }
+
+  private Priority getPriority(String textPriority){
+    return Priority.valueOf(StringUtils.uncapitalize(textPriority));
   }
 
   public int getTotalSize(){
