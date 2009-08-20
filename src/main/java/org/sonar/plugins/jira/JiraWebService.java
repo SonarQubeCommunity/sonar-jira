@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
-public class JiraIssuesCollector {
+public class JiraWebService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JiraIssuesCollector.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JiraWebService.class);
 
   private static final String RPC_PATH = "/rpc/xmlrpc";
   private static final String WEB_PATH = "/secure/IssueNavigator.jspa";
@@ -49,7 +49,7 @@ public class JiraIssuesCollector {
   private String password;
   private String projectName;
 
-  public JiraIssuesCollector(String serverUrl, String projectName, String login, String password, String urlParams) {
+  public JiraWebService(String serverUrl, String projectName, String login, String password, String urlParams) {
     this.serverUrl = serverUrl;
     this.login = login;
     this.password = password;

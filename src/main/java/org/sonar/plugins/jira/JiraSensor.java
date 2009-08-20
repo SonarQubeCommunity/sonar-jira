@@ -48,33 +48,33 @@ public class JiraSensor implements Sensor {
 
     if (isMandatoryParametersNotEmpty()) {
       try {
-        JiraIssuesCollector jiraIssuesCollector = new JiraIssuesCollector(serverURL, projectKey, login, password, urlParams);
-        LOG.info("Accessing Jira RPC with url {}", jiraIssuesCollector.getJiraRpcUrl());
+        JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
+        LOG.info("Accessing Jira web service with url {}", jiraWebService.getJiraRpcUrl());
 
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraIssuesCollector.getIssues());
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getIssues());
 
         Measure totalOpenIssuesMeasure = new Measure(JiraMetrics.OPEN_ISSUES, (double) jiraPriorities.getTotalSize());
-        totalOpenIssuesMeasure.setUrl(jiraIssuesCollector.getWebUrl());
+        totalOpenIssuesMeasure.setUrl(jiraWebService.getWebUrl());
         context.saveMeasure(totalOpenIssuesMeasure);
 
         Measure blockerIssuesMeasure = new Measure(JiraMetrics.BLOCKER_OPEN_ISSUES, (double) jiraPriorities.getBlockerSize());
-        blockerIssuesMeasure.setUrl(jiraIssuesCollector.getPriorityUrl(jiraPriorities.getBlockerIndex()));
+        blockerIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getBlockerIndex()));
         context.saveMeasure(blockerIssuesMeasure);
 
         Measure criticalIssuesMeasure = new Measure(JiraMetrics.CRITICAL_OPEN_ISSUES, (double) jiraPriorities.getCriticalSize());
-        criticalIssuesMeasure.setUrl(jiraIssuesCollector.getPriorityUrl(jiraPriorities.getCriticalIndex()));
+        criticalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getCriticalIndex()));
         context.saveMeasure(criticalIssuesMeasure);
 
         Measure majorIssuesMeasure = new Measure(JiraMetrics.MAJOR_OPEN_ISSUES, (double) jiraPriorities.getMajorSize());
-        majorIssuesMeasure.setUrl(jiraIssuesCollector.getPriorityUrl(jiraPriorities.getMajorIndex()));
+        majorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMajorIndex()));
         context.saveMeasure(majorIssuesMeasure);
 
         Measure minorIssuesMeasure = new Measure(JiraMetrics.MINOR_OPEN_ISSUES, (double) jiraPriorities.getMinorSize());
-        minorIssuesMeasure.setUrl(jiraIssuesCollector.getPriorityUrl(jiraPriorities.getMinorIndex()));
+        minorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMinorIndex()));
         context.saveMeasure(minorIssuesMeasure);
 
         Measure trivalIssuesMeasure = new Measure(JiraMetrics.TRIVIAL_OPEN_ISSUES, (double) jiraPriorities.getTrivialSize());
-        trivalIssuesMeasure.setUrl(jiraIssuesCollector.getPriorityUrl(jiraPriorities.getTrivialIndex()));
+        trivalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getTrivialIndex()));
         context.saveMeasure(trivalIssuesMeasure);
 
       } catch (Exception e) {
