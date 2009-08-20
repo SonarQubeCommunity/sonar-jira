@@ -46,27 +46,57 @@ public class JiraPriorities {
     return bag.getCount(Priority.blocker);
   }
 
+  public int getBlockerIndex(){
+    return Priority.blocker.getIndex();
+  }
+
   public int getCriticalSize() {
     return bag.getCount(Priority.critical);
+  }
+
+  public int getCriticalIndex(){
+    return Priority.critical.getIndex();
   }
 
   public int getMajorSize() {
     return bag.getCount(Priority.major);
   }
 
+  public int getMajorIndex(){
+    return Priority.major.getIndex();
+  }
+
   public int getMinorSize() {
     return bag.getCount(Priority.minor);
+  }
+
+  public int getMinorIndex(){
+    return Priority.minor.getIndex();
   }
 
   public int getTrivialSize() {
     return bag.getCount(Priority.trivial);
   }
 
+  public int getTrivialIndex() {
+    return Priority.trivial.getIndex();
+  }
+
   enum Priority {
-    blocker,
-    critical,
-    major,
-    minor,
-    trivial
+    blocker(1),
+    critical(2),
+    major(3),
+    minor(4),
+    trivial(5);
+
+    private int index;
+
+    Priority(int index){
+      this.index = index;
+    }
+
+    public int getIndex(){
+      return index;
+    }
   }
 }

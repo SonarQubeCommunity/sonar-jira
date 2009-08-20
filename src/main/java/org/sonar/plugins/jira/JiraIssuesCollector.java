@@ -40,6 +40,7 @@ public class JiraIssuesCollector {
   private static final String XML_PATH = "/sr/jira.issueviews:searchrequest-xml/temp/SearchRequest.xml";
   private static final String XML_PATH_OPT = "tempMax=1000";
   private static final String PID_OPT = "pid";
+  private static final String PRIORITY_OPT = "priority";
 
   private String urlParams;
 
@@ -73,7 +74,7 @@ public class JiraIssuesCollector {
   }
 
   private String getJiraXmlUrl() {
-    return serverUrl + XML_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams + "&" + XML_PATH_OPT;
+    return serverUrl + XML_PATH +"?"+ PID_OPT +"="+ getProjectId() +"&"+ urlParams +"&"+ XML_PATH_OPT;
   }
 
   private int getProjectId() {
@@ -101,7 +102,11 @@ public class JiraIssuesCollector {
   }
 
   public String getWebUrl(){
-    return serverUrl + WEB_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams;
+    return serverUrl + WEB_PATH +"?"+ PID_OPT +"="+ getProjectId() +"&"+ urlParams;
+  }
+
+  public String getPriorityUrl(int category){
+    return serverUrl + WEB_PATH +"?"+ PID_OPT +"="+ getProjectId() +"&"+ PRIORITY_OPT +"="+ category +"&"+ urlParams;
   }
 
 
