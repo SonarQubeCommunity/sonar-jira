@@ -12,7 +12,7 @@
   <name>Jira plugin</name>
 
   <properties>
-    <sonar.version>1.11-SNAPSHOT</sonar.version>
+    <sonar.version>1.10</sonar.version>
   </properties>
 
   <build>

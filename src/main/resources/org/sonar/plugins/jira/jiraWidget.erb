@@ -1,17 +1,18 @@
 <div class="dashbox">
   <p class="title">Jira</p>
 
-  <% if measure('open_issues') %>
+  <% if measure('issues') %>
 
     <span class="big">
-      <p><a href='<%= measure('open_issues').url -%>'><%= format_measure('open_issues', :suffix => ' issues') -%></a></p>
+      <p><a href='<%= measure('issues_url').data -%>'><%= format_measure('issues', :suffix => ' issues') -%></a></p>
     </span>
-    <p><a href='<%= measure('blocker_open_issues').url -%>'><%= format_measure('blocker_open_issues', :suffix => ' blocker') -%></a></p>
-    <p><a href='<%= measure('critical_open_issues').url -%>'><%= format_measure('critical_open_issues', :suffix => ' critical') -%></a></p>
-    <p><a href='<%= measure('major_open_issues').url -%>'><%= format_measure('major_open_issues', :suffix => ' major') -%></a></p>
-    <p><a href='<%= measure('minor_open_issues').url -%>'><%= format_measure('minor_open_issues', :suffix => ' minor') -%></a></p>
-    <p><a href='<%= measure('trivial_open_issues').url -%>'><%= format_measure('trivial_open_issues', :suffix => ' trivial') -%></a></p>
-  
+
+    <% measure('issues').text_value.split(",").each do |priority_with_size|
+         priority_with_size_array = priority_with_size.split("=")  %>
+
+      <p><%= priority_with_size_array[1]-%> <%= priority_with_size_array[0] -%></p>
+
+<% end %>
   <% else %>
     No Data
   <% end %>

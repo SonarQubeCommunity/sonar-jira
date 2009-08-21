@@ -61,7 +61,7 @@ public class JiraWebService {
 
   public void init() throws Exception {
       retrieveProject();
-      retrieveIssues();
+      retrievePrioritiesName();
   }
 
   private void retrieveProject() throws Exception {
@@ -74,7 +74,7 @@ public class JiraWebService {
     return serverUrl + RPC_PATH;
   }
 
-  private void retrieveIssues() throws Exception {
+  private void retrievePrioritiesName() throws Exception {
     JiraRss jirarss = new JiraRss(getJiraXmlUrl());
     issues =  CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
       public Object transform(Object o) {

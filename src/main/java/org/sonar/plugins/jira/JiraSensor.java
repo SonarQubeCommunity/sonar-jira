@@ -44,7 +44,7 @@ public class JiraSensor implements Sensor {
         JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
         jiraWebService.init();
         JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getIssues());
-        saveMeasures(context, jiraWebService, jiraPriorities);
+        saveMeasures(context, jiraWebService.getWebUrl(), (double) jiraPriorities.getTotalPrioritesCount(), jiraPriorities.getPriorityDistributionText());
 
       } catch (Exception e) {
         LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
@@ -54,7 +54,7 @@ public class JiraSensor implements Sensor {
     }
   }
 
-  private void initParams(Project project){
+  private void initParams(Project project) {
     this.serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
     this.projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
     this.login = (String) project.getProperty(JiraPlugin.LOGIN);
@@ -68,30 +68,13 @@ public class JiraSensor implements Sensor {
       StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
   }
 
-  private void saveMeasures(SensorContext context, JiraWebService jiraWebService, JiraPriorities jiraPriorities) {
-    Measure totalOpenIssuesMeasure = new Measure(JiraMetrics.OPEN_ISSUES, (double) jiraPriorities.getTotalSize());
-    totalOpenIssuesMeasure.setUrl(jiraWebService.getWebUrl());
-    context.saveMeasure(totalOpenIssuesMeasure);
+  private void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
+    Measure issuesMeasure = new Measure(JiraMetrics.ISSUES, totalPrioritiesCount);
+    issuesMeasure.setData(priorityDistribution);
+    context.saveMeasure(issuesMeasure);
 
-    Measure blockerIssuesMeasure = new Measure(JiraMetrics.BLOCKER_OPEN_ISSUES, (double) jiraPriorities.getBlockerSize());
-    blockerIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getBlockerIndex()));
-    context.saveMeasure(blockerIssuesMeasure);
-
-    Measure criticalIssuesMeasure = new Measure(JiraMetrics.CRITICAL_OPEN_ISSUES, (double) jiraPriorities.getCriticalSize());
-    criticalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getCriticalIndex()));
-    context.saveMeasure(criticalIssuesMeasure);
-
-    Measure majorIssuesMeasure = new Measure(JiraMetrics.MAJOR_OPEN_ISSUES, (double) jiraPriorities.getMajorSize());
-    majorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMajorIndex()));
-    context.saveMeasure(majorIssuesMeasure);
-
-    Measure minorIssuesMeasure = new Measure(JiraMetrics.MINOR_OPEN_ISSUES, (double) jiraPriorities.getMinorSize());
-    minorIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getMinorIndex()));
-    context.saveMeasure(minorIssuesMeasure);
-
-    Measure trivalIssuesMeasure = new Measure(JiraMetrics.TRIVIAL_OPEN_ISSUES, (double) jiraPriorities.getTrivialSize());
-    trivalIssuesMeasure.setUrl(jiraWebService.getPriorityUrl(jiraPriorities.getTrivialIndex()));
-    context.saveMeasure(trivalIssuesMeasure);
+    Measure issuesUrlMeasure = new Measure(JiraMetrics.ISSUES_URL, issueUrl);
+    context.saveMeasure(issuesUrlMeasure);
   }
 
   public boolean shouldExecuteOnProject(Project project) {
