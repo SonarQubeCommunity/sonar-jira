@@ -23,7 +23,10 @@ import org.apache.commons.collections.Bag;
 import org.apache.commons.collections.bag.HashBag;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class JiraPriorities {
 
@@ -47,7 +50,7 @@ public class JiraPriorities {
 
   public String getPriorityDistributionText() {
     String result = "";
-    for (Object o : getOrderedPriorities(prioritiesNameBag.uniqueSet())) {
+    for (Object o : getOrderedPriorities()) {
       String priority = (String) o;
       int prioritySize = prioritiesNameBag.getCount(priority);
       result += priority + "=" + prioritySize + ",";
@@ -56,8 +59,8 @@ public class JiraPriorities {
     return result;
   }
 
-  private List<String> getOrderedPriorities(Set prioritySet){
-    List<String> sortedPriorities  = new ArrayList(prioritySet);
+  private List<String> getOrderedPriorities(){
+    List<String> sortedPriorities  = new ArrayList<String>(prioritiesNameBag.uniqueSet());
     Collections.sort(sortedPriorities);
     return sortedPriorities;
   }
