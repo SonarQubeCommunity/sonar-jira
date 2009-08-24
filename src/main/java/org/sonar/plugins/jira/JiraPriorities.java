@@ -44,7 +44,7 @@ public class JiraPriorities {
     }
   }
 
-  public int getTotalPrioritesCount(){
+  public int getTotalPrioritesCount() {
     return prioritiesNameBag.size();
   }
 
@@ -59,8 +59,8 @@ public class JiraPriorities {
     return result;
   }
 
-  private List<String> getOrderedPriorities(){
-    List<String> sortedPriorities  = new ArrayList<String>(prioritiesNameBag.uniqueSet());
+  private List<String> getOrderedPriorities() {
+    List<String> sortedPriorities = new ArrayList<String>(prioritiesNameBag.uniqueSet());
     Collections.sort(sortedPriorities);
     return sortedPriorities;
   }

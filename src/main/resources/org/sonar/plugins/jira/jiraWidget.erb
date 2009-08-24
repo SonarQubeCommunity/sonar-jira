@@ -1,19 +1,36 @@
-<div class="dashbox">
-  <p class="title">Jira</p>
-
-  <% if measure('issues') %>
-
-    <span class="big">
-      <p><a href='<%= measure('issues_url').data -%>'><%= format_measure('issues', :suffix => ' issues') -%></a></p>
-    </span>
-
-    <% measure('issues').text_value.split(",").each do |priority_with_size|
-         priority_with_size_array = priority_with_size.split("=")  %>
-
-      <p><%= priority_with_size_array[1]-%> <%= priority_with_size_array[0] -%></p>
-
-<% end %>
-  <% else %>
-    No Data
-  <% end %>
+<div class="yui-g">
+  <div class="yui-u first">
+    <div class="dashbox">
+      <p class="title">Jira Issues</p>
+      <span class="big">
+        <% if measure('issues') %>
+          <p><a href='<%= measure('issues_url').data -%>'><%= format_measure('issues') -%></a></p>
+        <% else %>
+          No data
+        <% end %>
+      </span>
+    </div>
+  </div>
+  <div class="yui-u">
+    <div class="dashbox">
+      <% if measure('issues') %>
+        <p class="title">By Priority</p>
+        <table>
+          <% measure('issues').text_value.split(",").each do |priority_with_size|
+             priority_with_size_array = priority_with_size.split("=")  %>
+            <tr>
+              <td align="left"><%= priority_with_size_array[0] -%></td>
+              <td align="right" style="padding-left: 10px;"><%= priority_with_size_array[1] -%></td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
+    </div>
+  </div>
 </div>
+
+  
+
+
+
+
