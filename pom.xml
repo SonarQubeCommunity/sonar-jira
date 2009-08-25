@@ -7,9 +7,9 @@
     <version>2</version>
     <relativePath>../parent</relativePath>
   </parent>
-  <artifactId>sonar-plugin-jira</artifactId>
+  <artifactId>sonar-jira-plugin</artifactId>
   <version>0.1-SNAPSHOT</version>
-  <name>Jira plugin</name>
+  <name>Sonar JIRA plugin</name>
 
   <properties>
     <sonar.version>1.10</sonar.version>
@@ -70,7 +70,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>4.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -107,33 +107,6 @@
       <version>1.0.1</version>
     </dependency>    
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-        <!-- Workaround for MNG-2974, see note below -->
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
-
 
   <scm>
     <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
