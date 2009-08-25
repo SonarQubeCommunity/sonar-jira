@@ -32,7 +32,8 @@ import java.util.List;
   @Property(
     key = JiraPlugin.SERVER_URL,
     defaultValue = "",
-    name = "Jira server url",
+    name = "JIRA server url",
+    description = "example : http://jira.codehaus.org",
     project = true,
     module = true,
     global = true
@@ -40,7 +41,7 @@ import java.util.List;
   @Property(
     key = JiraPlugin.PROJECT_KEY,
     defaultValue = "",
-    name = "Jira project key",
+    name = "JIRA project key",
     project = true,
     module = true,
     global = false
@@ -48,7 +49,7 @@ import java.util.List;
   @Property(
     key = JiraPlugin.LOGIN,
     defaultValue = "",
-    name = "Jira login",
+    name = "JIRA login",
     project = true,
     module = true,
     global = true
@@ -56,7 +57,7 @@ import java.util.List;
   @Property(
     key = JiraPlugin.PASSWORD,
     defaultValue = "",
-    name = "Jira pasword",
+    name = "JIRA pasword",
     project = true,
     module = true,
     global = true
@@ -64,7 +65,7 @@ import java.util.List;
   @Property(
     key = JiraPlugin.URL_PARAMS,
     defaultValue = JiraPlugin.DEFAULT_URL_PARAMS,
-    name = "Jira param url",
+    name = "JIRA param url",
     project = true,
     module = true,
     global = true
@@ -82,7 +83,7 @@ public class JiraPlugin implements Plugin {
   public final static String DEFAULT_URL_PARAMS = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
 
   public String getDescription() {
-    return "Jira plugin, collect metrics on the Jira server defined in the project pom";
+    return "JIRA plugin, collect metrics on the JIRA server defined in the project pom";
   }
 
   public String getKey() {
@@ -90,7 +91,7 @@ public class JiraPlugin implements Plugin {
   }
 
   public String getName() {
-    return "Jira";
+    return "JIRA";
   }
 
   public List<Class<? extends Extension>> getExtensions() {

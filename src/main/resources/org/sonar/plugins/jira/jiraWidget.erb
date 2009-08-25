@@ -1,14 +1,11 @@
+<% if measure('issues') %>
 <div class="yui-g">
   <div class="yui-u first">
     <div class="dashbox">
-      <p class="title">Jira Issues</p>
-      <span class="big">
-        <% if measure('issues') %>
+      <p class="title">JIRA Issues</p>      
+        <span class="big">
           <p><a href='<%= measure('issues_url').data -%>'><%= format_measure('issues') -%></a></p>
-        <% else %>
-          No data
-        <% end %>
-      </span>
+        </span>
     </div>
   </div>
   <div class="yui-u">
@@ -28,6 +25,7 @@
     </div>
   </div>
 </div>
+<% end %>
 
   
 
