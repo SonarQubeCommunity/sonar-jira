@@ -43,7 +43,10 @@ public class JiraSensor implements Sensor {
       try {
         JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
         jiraWebService.init();
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getIssues());
+        LOG.info("JIRA XML url is {}", jiraWebService.getJiraXmlUrl());
+        LOG.info("Priorities collected are {}", jiraWebService.getPrioritiesName());
+
+        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getPrioritiesName());
         saveMeasures(context, jiraWebService.getWebUrl(), (double) jiraPriorities.getTotalPrioritesCount(), jiraPriorities.getPriorityDistributionText());
 
       } catch (Exception e) {

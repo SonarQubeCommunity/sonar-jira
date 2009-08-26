@@ -21,10 +21,7 @@ package org.sonar.plugins.jira;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.codehaus.swizzle.jira.Issue;
-import org.codehaus.swizzle.jira.Jira;
-import org.codehaus.swizzle.jira.JiraRss;
-import org.codehaus.swizzle.jira.Project;
+import org.codehaus.swizzle.jira.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +46,7 @@ public class JiraWebService {
   private String projectName;
 
   private Project project;
-  private Collection issues;
+  private Collection prioritiesName;
 
   public JiraWebService(String serverUrl, String projectName, String login, String password, String urlParams) {
     this.serverUrl = serverUrl;
@@ -60,6 +57,7 @@ public class JiraWebService {
   }
 
   public void init() throws Exception {
+      // TODO check project exists, if not throw an specific exception
       retrieveProject();
       retrievePrioritiesName();
   }
@@ -76,15 +74,16 @@ public class JiraWebService {
 
   private void retrievePrioritiesName() throws Exception {
     JiraRss jirarss = new JiraRss(getJiraXmlUrl());
-    issues =  CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
+    prioritiesName =  CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
       public Object transform(Object o) {
         Issue issue = (Issue) o;
-        return issue.getPriority().getName();
+        Priority priority = issue.getPriority();
+        return priority.getName();
       }
     });
   }
 
-  private String getJiraXmlUrl() {
+  protected String getJiraXmlUrl() {
     return serverUrl + XML_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + urlParams + "&" + XML_PATH_OPT;
   }
 
@@ -100,8 +99,8 @@ public class JiraWebService {
     return serverUrl + WEB_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + PRIORITY_OPT + "=" + category + "&" + urlParams;
   }
 
-  public Collection getIssues(){
-    return issues;
+  public Collection getPrioritiesName(){
+    return prioritiesName;
   }
 
 }
