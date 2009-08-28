@@ -7,7 +7,7 @@
     <relativePath>../parent</relativePath>
   </parent>
   <artifactId>sonar-jira-plugin</artifactId>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <name>Sonar JIRA plugin</name>
 
   <properties>
@@ -108,8 +108,8 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.1</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.1</developerConnection>
-    <url>scm:svn:https://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.1</url>
+    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/trunk/jira</developerConnection>
+    <url>http://svn.sonar-plugins.codehaus.org</url>
   </scm>
 </project>
