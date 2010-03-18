@@ -19,13 +19,23 @@
  */
 package org.sonar.plugins.jira;
 
+import com.atlassian.jira.rpc.soap.client.JiraSoapService;
+import com.atlassian.jira.rpc.soap.client.RemoteFilter;
+import com.atlassian.jira.rpc.soap.client.RemoteIssue;
+import com.atlassian.jira.rpc.soap.client.RemotePriority;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.Measure;
+import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
+import org.sonar.plugins.jira.soap.JiraSoapSession;
+
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JiraSensor implements Sensor {
 
@@ -41,18 +51,35 @@ public class JiraSensor implements Sensor {
     initParams(project);
     if (isMandatoryParametersNotEmpty()) {
       try {
-        JiraWebService jiraWebService = new JiraWebService(serverURL, projectKey, login, password, urlParams);
-        jiraWebService.init();
-        LOG.info("JIRA XML url is {}", jiraWebService.getJiraXmlUrl());
+        JiraSoapSession session = new JiraSoapSession(new URL(serverURL + "/rpc/soap/jirasoapservice-v2"));
+        session.connect(login, password);
 
-        JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getPrioritiesName());
-        saveMeasures(
-            context,
-            jiraWebService.getWebUrl(),
-            (double) jiraPriorities.getTotalPrioritesCount(),
-            jiraPriorities.getPriorityDistributionText()
-        );
+        JiraSoapService service = session.getJiraSoapService();
+        String authToken = session.getAuthenticationToken();
 
+        Map<String, String> priorities = new HashMap<String, String>();
+        for (RemotePriority priority : service.getPriorities(authToken)) {
+          priorities.put(priority.getId(), priority.getName());
+        }
+
+        Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
+        RemoteIssue[] issues = getIssuesForFilter(session, urlParams); // TODO replace urlParams by filterName
+        for (RemoteIssue issue : issues) {
+          String priority = issue.getPriority();
+          if (!issuesByPriority.containsKey(priority)) {
+            issuesByPriority.put(priority, 1);
+          } else {
+            issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
+          }
+        }
+
+        double total = 0;
+        PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
+        for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
+          total += entry.getValue();
+          distribution.add(priorities.get(entry.getKey()), entry.getValue());
+        }
+        saveMeasures(context, serverURL, total, distribution.buildData());
       } catch (Exception e) {
         LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
       }
@@ -88,4 +115,16 @@ public class JiraSensor implements Sensor {
     return project.isRoot();
   }
 
+  public static RemoteIssue[] getIssuesForFilter(JiraSoapSession session, String filterName) throws Exception {
+    JiraSoapService service = session.getJiraSoapService();
+    String authToken = session.getAuthenticationToken();
+
+    RemoteFilter[] filters = service.getFavouriteFilters(session.getAuthenticationToken());
+    for (RemoteFilter filter : filters) {
+      if (filterName.equals(filter.getName())) {
+        return service.getIssuesFromFilter(authToken, filter.getId());
+      }
+    }
+    return null;
+  }
 }

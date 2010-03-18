@@ -71,6 +71,34 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>axistools-maven-plugin</artifactId>
+        <version>1.3</version>
+        <dependencies>
+          <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis</artifactId>
+            <version>1.3</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <wsdlFiles>
+            <wsdlFile>jirasoapservice-v2.wsdl</wsdlFile>
+          </wsdlFiles>
+          <packageSpace>com.atlassian.jira.rpc.soap.client</packageSpace>
+        </configuration>
+        <executions>
+          <execution>
+            <id>wsdl2java-generation</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>wsdl2java</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -80,6 +108,12 @@
       <artifactId>sonar-plugin-api</artifactId>
       <version>${sonar.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>axis</groupId>
+      <artifactId>axis</artifactId>
+      <version>1.3</version>
     </dependency>
 
     <dependency>

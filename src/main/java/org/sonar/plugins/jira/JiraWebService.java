@@ -27,6 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
+/**
+ * @deprecated since 0.2 use {@link org.sonar.plugins.jira.soap.JiraSoapSession}
+ */
+@Deprecated
 public class JiraWebService {
 
   private static final Logger LOG = LoggerFactory.getLogger(JiraWebService.class);
@@ -57,9 +61,9 @@ public class JiraWebService {
   }
 
   public void init() throws Exception {
-      // TODO check project exists, if not throw an specific exception
-      retrieveProject();
-      retrievePrioritiesName();
+    // TODO check project exists, if not throw an specific exception
+    retrieveProject();
+    retrievePrioritiesName();
   }
 
   private void retrieveProject() throws Exception {
@@ -74,7 +78,7 @@ public class JiraWebService {
 
   private void retrievePrioritiesName() throws Exception {
     JiraRss jirarss = new JiraRss(getJiraXmlUrl());
-    prioritiesName =  CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
+    prioritiesName = CollectionUtils.collect(jirarss.getIssues(), new Transformer() {
       public Object transform(Object o) {
         Issue issue = (Issue) o;
         Priority priority = issue.getPriority();
@@ -99,7 +103,7 @@ public class JiraWebService {
     return serverUrl + WEB_PATH + "?" + PID_OPT + "=" + getProjectId() + "&" + PRIORITY_OPT + "=" + category + "&" + urlParams;
   }
 
-  public Collection getPrioritiesName(){
+  public Collection getPrioritiesName() {
     return prioritiesName;
   }
 
