@@ -28,6 +28,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @deprecated not needed anymore
+ */
+@Deprecated
 public class JiraPriorities {
 
   private Bag prioritiesNameBag;

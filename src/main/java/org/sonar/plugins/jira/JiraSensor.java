@@ -57,6 +57,7 @@ public class JiraSensor implements Sensor {
         JiraSoapService service = session.getJiraSoapService();
         String authToken = session.getAuthenticationToken();
 
+        // TODO use google-collections
         Map<String, String> priorities = new HashMap<String, String>();
         for (RemotePriority priority : service.getPriorities(authToken)) {
           priorities.put(priority.getId(), priority.getName());
@@ -80,6 +81,8 @@ public class JiraSensor implements Sensor {
           distribution.add(priorities.get(entry.getKey()), entry.getValue());
         }
         saveMeasures(context, serverURL, total, distribution.buildData());
+
+        session.disconnect();
       } catch (Exception e) {
         LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
       }

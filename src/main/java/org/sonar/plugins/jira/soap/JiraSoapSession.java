@@ -1,3 +1,22 @@
+/*
+ * Sonar, open source software quality management tool.
+ * Copyright (C) 2009 SonarSource SA
+ * mailto:contact AT sonarsource DOT com
+ *
+ * Sonar is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * Sonar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with Sonar; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+ */
 package org.sonar.plugins.jira.soap;
 
 import com.atlassian.jira.rpc.soap.client.JiraSoapService;
@@ -35,9 +54,13 @@ public class JiraSoapSession {
   }
 
   public void connect(String userName, String password) throws RemoteException {
-    System.out.println("\tConnnecting via SOAP as : " + userName);
+    LOG.debug("Connnecting via SOAP as : {}", userName);
     token = getJiraSoapService().login(userName, password);
-    System.out.println("\tConnected");
+    LOG.debug("Connected");
+  }
+
+  public void disconnect() throws RemoteException {
+    getJiraSoapService().logout(getAuthenticationToken());
   }
 
   public String getAuthenticationToken() {
