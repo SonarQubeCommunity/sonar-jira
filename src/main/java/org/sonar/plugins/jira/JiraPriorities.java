@@ -21,7 +21,7 @@ package org.sonar.plugins.jira;
 
 import org.apache.commons.collections.Bag;
 import org.apache.commons.collections.bag.HashBag;
-import org.apache.commons.lang.StringUtils;
+import org.sonar.api.measures.PropertiesBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,13 +49,13 @@ public class JiraPriorities {
   }
 
   public String getPriorityDistributionText() {
-    StringBuilder result = new StringBuilder();
+    PropertiesBuilder<String, Integer> priorityDistributionBuilder = new PropertiesBuilder<String, Integer>();
     for (Object o : getOrderedPriorities()) {
       String priority = (String) o;
       int prioritySize = prioritiesNameBag.getCount(priority);
-      result.append(priority).append('=').append(prioritySize).append(',');
+      priorityDistributionBuilder.add(priority, prioritySize);
     }
-    return StringUtils.removeEnd(result.toString(), ",");
+    return priorityDistributionBuilder.buildData();
   }
 
   private List<String> getOrderedPriorities() {

@@ -46,7 +46,12 @@ public class JiraSensor implements Sensor {
         LOG.info("JIRA XML url is {}", jiraWebService.getJiraXmlUrl());
 
         JiraPriorities jiraPriorities = new JiraPriorities(jiraWebService.getPrioritiesName());
-        saveMeasures(context, jiraWebService.getWebUrl(), (double) jiraPriorities.getTotalPrioritesCount(), jiraPriorities.getPriorityDistributionText());
+        saveMeasures(
+            context,
+            jiraWebService.getWebUrl(),
+            (double) jiraPriorities.getTotalPrioritesCount(),
+            jiraPriorities.getPriorityDistributionText()
+        );
 
       } catch (Exception e) {
         LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
@@ -67,10 +72,10 @@ public class JiraSensor implements Sensor {
 
   private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey) &&
-      StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
+        StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
   }
 
-  private void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
+  protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
     Measure issuesMeasure = new Measure(JiraMetrics.ISSUES, totalPrioritiesCount);
     issuesMeasure.setData(priorityDistribution);
     context.saveMeasure(issuesMeasure);

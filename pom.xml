@@ -16,6 +16,25 @@
     <license.failIfMissing>false</license.failIfMissing>
   </properties>
 
+  <developers>
+    <developer>
+      <id>julien.lancelot</id>
+      <name>Julien Lancelot</name>
+    </developer>
+    <developer>
+      <id>franck bassy</id>
+      <name>Franck Bassy</name>
+    </developer>
+    <developer>
+      <id>cedric.munger</id>
+      <name>Cédric Munger</name>
+    </developer>
+    <developer>
+      <id>godin</id>
+      <name>Evgeny Mandrikov</name>
+    </developer>
+  </developers>
+
   <build>
     <plugins>
       <plugin>

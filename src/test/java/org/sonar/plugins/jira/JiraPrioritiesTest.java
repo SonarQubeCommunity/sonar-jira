@@ -19,20 +19,22 @@
  */
 package org.sonar.plugins.jira;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 public class JiraPrioritiesTest {
 
   @Test
   public void shouldReturnsADistributionString() {
     JiraPriorities jiraPriorities = createPrioritiesFixture();
-    assertThat(jiraPriorities.getPriorityDistributionText(), is("Critical=1,Major=2,Minor=1"));
+
+    assertThat(jiraPriorities.getPriorityDistributionText(), is("Critical=1;Major=2;Minor=1"));
   }
 
   @Test
@@ -44,20 +46,20 @@ public class JiraPrioritiesTest {
   }
 
   @Test
-  public void shouldReturnTotalPriortitiesCount(){
+  public void shouldReturnTotalPriortitiesCount() {
     JiraPriorities jiraPriorities = createPrioritiesFixture();
-    assertThat(jiraPriorities.getTotalPrioritesCount(), is(4));    
+    assertThat(jiraPriorities.getTotalPrioritesCount(), is(4));
   }
 
   @Test
-  public void shouldReturnZeroWhenNoPriortities(){
+  public void shouldReturnZeroWhenNoPriortities() {
     Collection priorites = Collections.emptyList();
     JiraPriorities jiraPriorities = new JiraPriorities(priorites);
 
-    assertThat(jiraPriorities.getTotalPrioritesCount(), is(0));    
+    assertThat(jiraPriorities.getTotalPrioritesCount(), is(0));
   }
 
-  private JiraPriorities createPrioritiesFixture(){
+  private JiraPriorities createPrioritiesFixture() {
     Collection priorites = Arrays.asList("Major", "Minor", "Critical", "Major");
     return new JiraPriorities(priorites);
   }

@@ -21,12 +21,14 @@ package org.sonar.plugins.jira;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.sonar.api.batch.SensorContext;
 import org.sonar.api.resources.Project;
+import org.sonar.api.test.IsMeasure;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Evgeny Mandrikov
@@ -43,8 +45,21 @@ public class JiraSensorTest {
   public void testShouldExecuteOnProject() throws Exception {
     Project project = mock(Project.class);
     when(project.isRoot()).thenReturn(true).thenReturn(false);
-    
+
     assertThat(sensor.shouldExecuteOnProject(project), is(true));
     assertThat(sensor.shouldExecuteOnProject(project), is(false));
+  }
+
+  @Test
+  public void testSaveMeasures() {
+    SensorContext context = mock(SensorContext.class);
+    String url = "http://localhost/jira";
+    String priorityDistribution = "Critical=1";
+
+    sensor.saveMeasures(context, url, 1, priorityDistribution);
+
+    verify(context).saveMeasure(argThat(new IsMeasure(JiraMetrics.ISSUES_URL, url)));
+    verify(context).saveMeasure(argThat(new IsMeasure(JiraMetrics.ISSUES, priorityDistribution)));
+    verifyNoMoreInteractions(context);
   }
 }
