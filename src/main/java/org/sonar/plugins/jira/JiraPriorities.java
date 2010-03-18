@@ -49,14 +49,13 @@ public class JiraPriorities {
   }
 
   public String getPriorityDistributionText() {
-    String result = "";
+    StringBuilder result = new StringBuilder();
     for (Object o : getOrderedPriorities()) {
       String priority = (String) o;
       int prioritySize = prioritiesNameBag.getCount(priority);
-      result += priority + "=" + prioritySize + ",";
+      result.append(priority).append('=').append(prioritySize).append(',');
     }
-    result = StringUtils.removeEnd(result, ",");
-    return result;
+    return StringUtils.removeEnd(result.toString(), ",");
   }
 
   private List<String> getOrderedPriorities() {
