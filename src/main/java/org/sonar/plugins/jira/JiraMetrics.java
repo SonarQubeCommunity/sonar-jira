@@ -25,14 +25,34 @@ import org.sonar.api.measures.Metrics;
 import java.util.Arrays;
 import java.util.List;
 
-
 public class JiraMetrics implements Metrics {
+  public static final String DOMAIN = "Issues";
 
-  public final static Metric ISSUES = new Metric("issues", "JIRA Issues", "Number of JIRA Issues", Metric.ValueType.INT, Metric.DIRECTION_NONE, false, "Issues");
-  public final static Metric ISSUES_URL = new Metric("issues_url", "JIRA Url issues", "Web JIRA url issues", Metric.ValueType.DATA, Metric.DIRECTION_NONE, false, "Issues");
+  public final static Metric ISSUES = new Metric(
+      "issues",
+      "JIRA Issues",
+      "Number of JIRA Issues",
+      Metric.ValueType.INT,
+      Metric.DIRECTION_NONE,
+      false,
+      DOMAIN
+  );
+
+  public final static Metric ISSUES_URL = new Metric(
+      "issues_url",
+      "JIRA Url issues",
+      "Web JIRA url issues",
+      Metric.ValueType.DATA,
+      Metric.DIRECTION_NONE,
+      false,
+      DOMAIN
+  );
 
   public List<Metric> getMetrics() {
-    return Arrays.asList(ISSUES, ISSUES_URL);
+    return Arrays.asList(
+        ISSUES,
+        ISSUES_URL
+    );
   }
 
 }

@@ -19,13 +19,20 @@
  */
 package org.sonar.plugins.jira;
 
-import org.sonar.api.web.AbstractDashboardWidget;
+import org.sonar.api.web.AbstractRubyTemplate;
+import org.sonar.api.web.RubyRailsWidget;
 
-public class JiraWidget extends AbstractDashboardWidget {
+public class JiraWidget extends AbstractRubyTemplate implements RubyRailsWidget {
+  public String getId() {
+    return "jira";
+  }
+
+  public String getTitle() {
+    return "Jira";
+  }
 
   @Override
   protected String getTemplatePath() {
     return "/org/sonar/plugins/jira/jiraWidget.erb";
   }
-
 }

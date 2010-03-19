@@ -80,16 +80,16 @@ public class JiraPlugin implements Plugin {
   public final static String URL_PARAMS_PROPERTY = "sonar.jira.url.param";
   public final static String URL_PARAMS_DEFAULT_VALUE = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
 
-  public String getDescription() {
-    return "JIRA plugin, collect metrics on the JIRA server defined in the project pom";
-  }
-
   public String getKey() {
     return "jira";
   }
 
   public String getName() {
     return "JIRA";
+  }
+
+  public String getDescription() {
+    return "This plugin retrieves number of issues associated to a project from <a href='http://www.atlassian.com/software/jira/'>JIRA</a>.";
   }
 
   public List<Class<? extends Extension>> getExtensions() {

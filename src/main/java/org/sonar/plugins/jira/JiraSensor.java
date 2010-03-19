@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JiraSensor implements Sensor {
-
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
   private String serverURL;

@@ -20,6 +20,9 @@
 package org.sonar.plugins.jira;
 
 import org.junit.Test;
+import org.sonar.api.measures.Metric;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -30,6 +33,10 @@ import static org.junit.Assert.assertThat;
 public class JiraMetricsTest {
   @Test
   public void testGetMetrics() throws Exception {
-    assertThat(new JiraMetrics().getMetrics().size(), is(2));
+    List<Metric> metrics = new JiraMetrics().getMetrics();
+    assertThat(metrics.size(), is(2));
+    for (Metric metric : metrics) {
+      assertThat(metric.getDomain(), is(JiraMetrics.DOMAIN));
+    }
   }
 }
