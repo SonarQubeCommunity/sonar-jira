@@ -84,7 +84,7 @@ public class JiraSensor implements Sensor {
 
         session.disconnect();
       } catch (Exception e) {
-        LOG.error("Error accessing Jira web service, please verify the parameters. Returned error is '{}'", e.getMessage());
+        LOG.error("Error accessing Jira web service, please verify the parameters", e);
       }
     } else {
       LOG.error("The server url, the project key, the login and the password must not be empty.");
