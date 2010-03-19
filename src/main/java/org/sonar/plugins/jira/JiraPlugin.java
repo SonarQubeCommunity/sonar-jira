@@ -32,53 +32,42 @@ import java.util.List;
     @Property(
         key = JiraPlugin.SERVER_URL_PROPERTY,
         defaultValue = "",
-        name = "JIRA server url",
+        name = "Server URL",
         description = "Example : http://jira.codehaus.org",
+        global = true,
         project = true,
-        module = true,
-        global = true
-    ),
-    @Property(
-        key = JiraPlugin.PROJECT_KEY_PROPERTY,
-        defaultValue = "",
-        name = "JIRA project key",
-        project = true,
-        module = true,
-        global = false
+        module = false
     ),
     @Property(
         key = JiraPlugin.USERNAME_PROPERTY,
         defaultValue = "",
-        name = "JIRA username",
+        name = "Username",
+        global = true,
         project = true,
-        module = true,
-        global = true
+        module = false
     ),
     @Property(
         key = JiraPlugin.PASSWORD_PROPERTY,
         defaultValue = "",
-        name = "JIRA password",
+        name = "Password",
+        global = true,
         project = true,
-        module = true,
-        global = true
+        module = false
     ),
     @Property(
-        key = JiraPlugin.URL_PARAMS_PROPERTY,
-        defaultValue = JiraPlugin.URL_PARAMS_DEFAULT_VALUE,
-        name = "JIRA param url",
+        key = JiraPlugin.FILTER_PROPERTY,
+        defaultValue = "",
+        name = "Filter name",
+        global = false,
         project = true,
-        module = true,
-        global = true
+        module = true
     )
-
 })
 public class JiraPlugin implements Plugin {
   public final static String SERVER_URL_PROPERTY = "sonar.jira.url";
   public final static String USERNAME_PROPERTY = "sonar.jira.login.secured";
   public final static String PASSWORD_PROPERTY = "sonar.jira.password.secured";
-  public final static String PROJECT_KEY_PROPERTY = "sonar.jira.key";
-  public final static String URL_PARAMS_PROPERTY = "sonar.jira.url.param";
-  public final static String URL_PARAMS_DEFAULT_VALUE = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
+  public final static String FILTER_PROPERTY = "sonar.jira.url.param";
 
   public String getKey() {
     return "jira";

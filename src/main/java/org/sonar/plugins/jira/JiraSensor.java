@@ -32,9 +32,11 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
+import org.sonar.api.utils.SonarException;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,65 +44,24 @@ public class JiraSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
   private String serverUrl;
-  private String projectKey;
-  private String login;
+  private String username;
   private String password;
-  private String urlParams;
+  private String filterName;
 
   public void analyse(Project project, SensorContext context) {
     initParams(project);
     if (!isMandatoryParametersNotEmpty()) {
-      LOG.warn("The server url, the project key, the login and the password must not be empty.");
+      LOG.warn("The server url, the project key, the username and the password must not be empty.");
       return;
     }
     try {
       JiraSoapSession session = new JiraSoapSession(new URL(serverUrl + "/rpc/soap/jirasoapservice-v2"));
-      session.connect(login, password);
+      session.connect(username, password);
 
       JiraSoapService service = session.getJiraSoapService();
       String authToken = session.getAuthenticationToken();
 
-      // TODO use google-collections
-      Map<String, String> priorities = new HashMap<String, String>();
-      for (RemotePriority priority : service.getPriorities(authToken)) {
-        priorities.put(priority.getId(), priority.getName());
-      }
-
-      Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
-
-      String filterName = urlParams;
-      RemoteFilter[] filters = service.getFavouriteFilters(session.getAuthenticationToken());
-      RemoteFilter filter = null;
-      for (RemoteFilter f : filters) {
-        if (filterName.equals(f.getName())) {
-          filter = f;
-        }
-      }
-
-      if (filter == null) {
-        LOG.warn("Unable to find filter named '{}'", filterName);
-        return;
-      }
-
-      RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
-      for (RemoteIssue issue : issues) {
-        String priority = issue.getPriority();
-        if (!issuesByPriority.containsKey(priority)) {
-          issuesByPriority.put(priority, 1);
-        } else {
-          issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
-        }
-      }
-
-      double total = 0;
-      PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
-      for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
-        total += entry.getValue();
-        distribution.add(priorities.get(entry.getKey()), entry.getValue());
-      }
-
-      String url = serverUrl + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
-      saveMeasures(context, url, total, distribution.buildData());
+      analyze(context, service, authToken);
 
       session.disconnect();
     } catch (Exception e) {
@@ -108,20 +69,59 @@ public class JiraSensor implements Sensor {
     }
   }
 
+  private void analyze(SensorContext context, JiraSoapService service, String authToken) throws RemoteException {
+    // TODO use google-collections
+    Map<String, String> priorities = new HashMap<String, String>();
+    for (RemotePriority priority : service.getPriorities(authToken)) {
+      priorities.put(priority.getId(), priority.getName());
+    }
+
+    RemoteFilter[] filters = service.getFavouriteFilters(authToken);
+    RemoteFilter filter = null;
+    for (RemoteFilter f : filters) {
+      if (filterName.equals(f.getName())) {
+        filter = f;
+      }
+    }
+
+    if (filter == null) {
+      throw new SonarException("Unable to find filter '" + filterName + "' in JIRA");
+    }
+
+    RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
+    Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
+    for (RemoteIssue issue : issues) {
+      String priority = issue.getPriority();
+      if (!issuesByPriority.containsKey(priority)) {
+        issuesByPriority.put(priority, 1);
+      } else {
+        issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
+      }
+    }
+
+    double total = 0;
+    PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
+    for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
+      total += entry.getValue();
+      distribution.add(priorities.get(entry.getKey()), entry.getValue());
+    }
+
+    String url = serverUrl + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
+    saveMeasures(context, url, total, distribution.buildData());
+  }
+
   private void initParams(Project project) {
     Configuration configuration = project.getConfiguration();
-    this.serverUrl = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
-    this.login = configuration.getString(JiraPlugin.USERNAME_PROPERTY);
-    this.password = configuration.getString(JiraPlugin.PASSWORD_PROPERTY);
-    this.projectKey = configuration.getString(JiraPlugin.PROJECT_KEY_PROPERTY);
-    this.urlParams = configuration.getString(JiraPlugin.URL_PARAMS_PROPERTY, JiraPlugin.URL_PARAMS_DEFAULT_VALUE);
+    serverUrl = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
+    username = configuration.getString(JiraPlugin.USERNAME_PROPERTY);
+    password = configuration.getString(JiraPlugin.PASSWORD_PROPERTY);
+    filterName = configuration.getString(JiraPlugin.FILTER_PROPERTY);
   }
 
   private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverUrl) &&
-        StringUtils.isNotEmpty(login) &&
-        StringUtils.isNotEmpty(password) &&
-        StringUtils.isNotEmpty(projectKey);
+        StringUtils.isNotEmpty(username) &&
+        StringUtils.isNotEmpty(password);
   }
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
