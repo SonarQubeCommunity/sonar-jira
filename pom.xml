@@ -14,6 +14,7 @@
   <properties>
     <sonar.version>2.0.1</sonar.version>
     <license.failIfMissing>false</license.failIfMissing>
+    <pluginArtifact>${project.build.directory}/${project.build.finalName}-shaded.jar</pluginArtifact>
   </properties>
 
   <developers>
@@ -51,7 +52,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.2.1</version>
+        <version>1.3.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -59,12 +60,18 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
               <artifactSet>
                 <includes>
+                  <!--
                   <include>xmlrpc:xmlrpc-client</include>
                   <include>org.codehaus.swizzle:swizzle-stream</include>
                   <include>org.apache.xmlrpc:xmlrpc-common</include>
                   <include>org.apache.ws.commons:ws-commons-util</include>
+                  -->
+                  <include>axis:*</include>
+                  <include>commons-discovery:commons-discovery</include>
+                  <include>wsdl4j:wsdl4j</include>
                 </includes>
               </artifactSet>
             </configuration>
@@ -114,6 +121,19 @@
       <groupId>axis</groupId>
       <artifactId>axis</artifactId>
       <version>1.3</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.0.9</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -135,13 +155,6 @@
       <groupId>org.apache.ws.commons</groupId>
       <artifactId>ws-commons-util</artifactId>
       <version>1.0.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0.9</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- unit tests -->

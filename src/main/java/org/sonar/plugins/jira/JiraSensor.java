@@ -50,7 +50,7 @@ public class JiraSensor implements Sensor {
   public void analyse(Project project, SensorContext context) {
     initParams(project);
     if (!isMandatoryParametersNotEmpty()) {
-      LOG.error("The server url, the project key, the login and the password must not be empty.");
+      LOG.warn("The server url, the project key, the login and the password must not be empty.");
       return;
     }
     try {
@@ -67,7 +67,22 @@ public class JiraSensor implements Sensor {
       }
 
       Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
-      RemoteIssue[] issues = getIssuesForFilter(session, urlParams); // TODO replace urlParams by filterName
+
+      String filterName = urlParams;
+      RemoteFilter[] filters = service.getFavouriteFilters(session.getAuthenticationToken());
+      RemoteFilter filter = null;
+      for (RemoteFilter f : filters) {
+        if (filterName.equals(f.getName())) {
+          filter = f;
+        }
+      }
+
+      if (filter == null) {
+        LOG.warn("Unable to find filter named '{}'", filterName);
+        return;
+      }
+
+      RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
       for (RemoteIssue issue : issues) {
         String priority = issue.getPriority();
         if (!issuesByPriority.containsKey(priority)) {
@@ -83,7 +98,9 @@ public class JiraSensor implements Sensor {
         total += entry.getValue();
         distribution.add(priorities.get(entry.getKey()), entry.getValue());
       }
-      saveMeasures(context, serverUrl, total, distribution.buildData());
+
+      String url = serverUrl + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
+      saveMeasures(context, url, total, distribution.buildData());
 
       session.disconnect();
     } catch (Exception e) {
@@ -109,27 +126,17 @@ public class JiraSensor implements Sensor {
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
     Measure issuesMeasure = new Measure(JiraMetrics.ISSUES, totalPrioritiesCount);
+    issuesMeasure.setUrl(issueUrl);
     issuesMeasure.setData(priorityDistribution);
     context.saveMeasure(issuesMeasure);
-
-    Measure issuesUrlMeasure = new Measure(JiraMetrics.ISSUES_URL, issueUrl);
-    context.saveMeasure(issuesUrlMeasure);
   }
 
   public boolean shouldExecuteOnProject(Project project) {
     return project.isRoot();
   }
 
-  public static RemoteIssue[] getIssuesForFilter(JiraSoapSession session, String filterName) throws Exception {
-    JiraSoapService service = session.getJiraSoapService();
-    String authToken = session.getAuthenticationToken();
-
-    RemoteFilter[] filters = service.getFavouriteFilters(session.getAuthenticationToken());
-    for (RemoteFilter filter : filters) {
-      if (filterName.equals(filter.getName())) {
-        return service.getIssuesFromFilter(authToken, filter.getId());
-      }
-    }
-    return null;
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
   }
 }

@@ -38,20 +38,9 @@ public class JiraMetrics implements Metrics {
       DOMAIN
   );
 
-  public final static Metric ISSUES_URL = new Metric(
-      "issues_url",
-      "JIRA Url issues",
-      "Web JIRA url issues",
-      Metric.ValueType.DATA,
-      Metric.DIRECTION_NONE,
-      false,
-      DOMAIN
-  );
-
   public List<Metric> getMetrics() {
     return Arrays.asList(
-        ISSUES,
-        ISSUES_URL
+        ISSUES
     );
   }
 

@@ -74,9 +74,9 @@ import java.util.List;
 })
 public class JiraPlugin implements Plugin {
   public final static String SERVER_URL_PROPERTY = "sonar.jira.url";
-  public final static String PROJECT_KEY_PROPERTY = "sonar.jira.key";
   public final static String USERNAME_PROPERTY = "sonar.jira.login.secured";
   public final static String PASSWORD_PROPERTY = "sonar.jira.password.secured";
+  public final static String PROJECT_KEY_PROPERTY = "sonar.jira.key";
   public final static String URL_PARAMS_PROPERTY = "sonar.jira.url.param";
   public final static String URL_PARAMS_DEFAULT_VALUE = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
 
@@ -99,5 +99,4 @@ public class JiraPlugin implements Plugin {
     list.add(JiraWidget.class);
     return list;
   }
-
 }

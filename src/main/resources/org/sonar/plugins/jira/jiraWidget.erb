@@ -1,6 +1,5 @@
 <%
    issues_measure = measure('issues')
-   issues_url_measure = measure('issues_url')
 
    if issues_measure
 %>
@@ -9,7 +8,9 @@
       <div class="dashbox">
         <p class="title">JIRA Issues</p>
         <span class="big">
-          <p><a href='<%= issues_url_measure.data -%>'><%= format_measure(issues_measure) -%></a></p>
+          <p>
+            <%= format_measure(issues_measure, {:url => issues_measure.url}) -%>
+          </p>
         </span>
       </div>
     </div>
@@ -20,8 +21,12 @@
           <% issues_measure.text_value.split(";").each do |priority_with_size|
             priority_with_size_array = priority_with_size.split("=") %>
             <tr>
-              <td align="left"><%= priority_with_size_array[0] -%></td>
-              <td align="right" style="padding-left: 10px;"><%= priority_with_size_array[1] -%></td>
+              <td align="left">
+                <%= priority_with_size_array[0] -%>
+              </td>
+              <td align="right" style="padding-left: 10px;">
+                <%= priority_with_size_array[1] -%>
+              </td>
             </tr>
           <% end %>
         </table>

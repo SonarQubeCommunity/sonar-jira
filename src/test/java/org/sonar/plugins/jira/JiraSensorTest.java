@@ -58,8 +58,7 @@ public class JiraSensorTest {
 
     sensor.saveMeasures(context, url, 1, priorityDistribution);
 
-    verify(context).saveMeasure(argThat(new IsMeasure(JiraMetrics.ISSUES_URL, url)));
-    verify(context).saveMeasure(argThat(new IsMeasure(JiraMetrics.ISSUES, priorityDistribution)));
+    verify(context).saveMeasure(argThat(new IsMeasure(JiraMetrics.ISSUES, 1.0, priorityDistribution)));
     verifyNoMoreInteractions(context);
   }
 }
