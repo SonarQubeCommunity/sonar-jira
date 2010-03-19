@@ -41,7 +41,7 @@ import java.util.Map;
 public class JiraSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
-  private String serverURL;
+  private String serverUrl;
   private String projectKey;
   private String login;
   private String password;
@@ -49,60 +49,62 @@ public class JiraSensor implements Sensor {
 
   public void analyse(Project project, SensorContext context) {
     initParams(project);
-    if (isMandatoryParametersNotEmpty()) {
-      try {
-        JiraSoapSession session = new JiraSoapSession(new URL(serverURL + "/rpc/soap/jirasoapservice-v2"));
-        session.connect(login, password);
-
-        JiraSoapService service = session.getJiraSoapService();
-        String authToken = session.getAuthenticationToken();
-
-        // TODO use google-collections
-        Map<String, String> priorities = new HashMap<String, String>();
-        for (RemotePriority priority : service.getPriorities(authToken)) {
-          priorities.put(priority.getId(), priority.getName());
-        }
-
-        Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
-        RemoteIssue[] issues = getIssuesForFilter(session, urlParams); // TODO replace urlParams by filterName
-        for (RemoteIssue issue : issues) {
-          String priority = issue.getPriority();
-          if (!issuesByPriority.containsKey(priority)) {
-            issuesByPriority.put(priority, 1);
-          } else {
-            issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
-          }
-        }
-
-        double total = 0;
-        PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
-        for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
-          total += entry.getValue();
-          distribution.add(priorities.get(entry.getKey()), entry.getValue());
-        }
-        saveMeasures(context, serverURL, total, distribution.buildData());
-
-        session.disconnect();
-      } catch (Exception e) {
-        LOG.error("Error accessing Jira web service, please verify the parameters", e);
-      }
-    } else {
+    if (!isMandatoryParametersNotEmpty()) {
       LOG.error("The server url, the project key, the login and the password must not be empty.");
+      return;
+    }
+    try {
+      JiraSoapSession session = new JiraSoapSession(new URL(serverUrl + "/rpc/soap/jirasoapservice-v2"));
+      session.connect(login, password);
+
+      JiraSoapService service = session.getJiraSoapService();
+      String authToken = session.getAuthenticationToken();
+
+      // TODO use google-collections
+      Map<String, String> priorities = new HashMap<String, String>();
+      for (RemotePriority priority : service.getPriorities(authToken)) {
+        priorities.put(priority.getId(), priority.getName());
+      }
+
+      Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
+      RemoteIssue[] issues = getIssuesForFilter(session, urlParams); // TODO replace urlParams by filterName
+      for (RemoteIssue issue : issues) {
+        String priority = issue.getPriority();
+        if (!issuesByPriority.containsKey(priority)) {
+          issuesByPriority.put(priority, 1);
+        } else {
+          issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
+        }
+      }
+
+      double total = 0;
+      PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
+      for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
+        total += entry.getValue();
+        distribution.add(priorities.get(entry.getKey()), entry.getValue());
+      }
+      saveMeasures(context, serverUrl, total, distribution.buildData());
+
+      session.disconnect();
+    } catch (Exception e) {
+      LOG.error("Error accessing Jira web service, please verify the parameters", e);
     }
   }
 
   private void initParams(Project project) {
     Configuration configuration = project.getConfiguration();
-    this.serverURL = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
-    this.projectKey = configuration.getString(JiraPlugin.PROJECT_KEY_PROPERTY);
+    this.serverUrl = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
     this.login = configuration.getString(JiraPlugin.USERNAME_PROPERTY);
     this.password = configuration.getString(JiraPlugin.PASSWORD_PROPERTY);
+    this.projectKey = configuration.getString(JiraPlugin.PROJECT_KEY_PROPERTY);
     this.urlParams = configuration.getString(JiraPlugin.URL_PARAMS_PROPERTY, JiraPlugin.URL_PARAMS_DEFAULT_VALUE);
   }
 
   private boolean isMandatoryParametersNotEmpty() {
-    return StringUtils.isNotEmpty(serverURL) && StringUtils.isNotEmpty(projectKey) &&
-        StringUtils.isNotEmpty(login) && StringUtils.isNotEmpty(password);
+    return StringUtils.isNotEmpty(serverUrl) &&
+        StringUtils.isNotEmpty(login) &&
+        StringUtils.isNotEmpty(password) &&
+        StringUtils.isNotEmpty(projectKey);
   }
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {
