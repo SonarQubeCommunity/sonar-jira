@@ -13,7 +13,6 @@
 
   <properties>
     <sonar.version>2.0.1</sonar.version>
-    <license.failIfMissing>false</license.failIfMissing>
     <pluginArtifact>${project.build.directory}/${project.build.finalName}-shaded.jar</pluginArtifact>
   </properties>
 
