@@ -29,58 +29,56 @@ import java.util.List;
 
 
 @Properties({
-  @Property(
-    key = JiraPlugin.SERVER_URL,
-    defaultValue = "",
-    name = "JIRA server url",
-    description = "example : http://jira.codehaus.org",
-    project = true,
-    module = true,
-    global = true
-  ),
-  @Property(
-    key = JiraPlugin.PROJECT_KEY,
-    defaultValue = "",
-    name = "JIRA project key",
-    project = true,
-    module = true,
-    global = false
-  ),
-  @Property(
-    key = JiraPlugin.LOGIN,
-    defaultValue = "",
-    name = "JIRA login",
-    project = true,
-    module = true,
-    global = true
-  ),
-  @Property(
-    key = JiraPlugin.PASSWORD,
-    defaultValue = "",
-    name = "JIRA pasword",
-    project = true,
-    module = true,
-    global = true
-  ),
-  @Property(
-    key = JiraPlugin.URL_PARAMS,
-    defaultValue = JiraPlugin.DEFAULT_URL_PARAMS,
-    name = "JIRA param url",
-    project = true,
-    module = true,
-    global = true
-  )
+    @Property(
+        key = JiraPlugin.SERVER_URL_PROPERTY,
+        defaultValue = "",
+        name = "JIRA server url",
+        description = "Example : http://jira.codehaus.org",
+        project = true,
+        module = true,
+        global = true
+    ),
+    @Property(
+        key = JiraPlugin.PROJECT_KEY_PROPERTY,
+        defaultValue = "",
+        name = "JIRA project key",
+        project = true,
+        module = true,
+        global = false
+    ),
+    @Property(
+        key = JiraPlugin.USERNAME_PROPERTY,
+        defaultValue = "",
+        name = "JIRA username",
+        project = true,
+        module = true,
+        global = true
+    ),
+    @Property(
+        key = JiraPlugin.PASSWORD_PROPERTY,
+        defaultValue = "",
+        name = "JIRA password",
+        project = true,
+        module = true,
+        global = true
+    ),
+    @Property(
+        key = JiraPlugin.URL_PARAMS_PROPERTY,
+        defaultValue = JiraPlugin.URL_PARAMS_DEFAULT_VALUE,
+        name = "JIRA param url",
+        project = true,
+        module = true,
+        global = true
+    )
 
 })
 public class JiraPlugin implements Plugin {
-
-  public final static String SERVER_URL = "sonar.jira.url";
-  public final static String PROJECT_KEY = "sonar.jira.key";
-  public final static String LOGIN = "sonar.jira.login";
-  public final static String PASSWORD = "sonar.jira.password";
-  public final static String URL_PARAMS = "sonar.jira.url.param";
-
-  public final static String DEFAULT_URL_PARAMS = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
+  public final static String SERVER_URL_PROPERTY = "sonar.jira.url";
+  public final static String PROJECT_KEY_PROPERTY = "sonar.jira.key";
+  public final static String USERNAME_PROPERTY = "sonar.jira.login.secured";
+  public final static String PASSWORD_PROPERTY = "sonar.jira.password.secured";
+  public final static String URL_PARAMS_PROPERTY = "sonar.jira.url.param";
+  public final static String URL_PARAMS_DEFAULT_VALUE = "reset=true&status=1&status=3&status=4&sorter/field=issuekey&sorter/order=DESC&sorter/field=priority&sorter/order=DESC";
 
   public String getDescription() {
     return "JIRA plugin, collect metrics on the JIRA server defined in the project pom";

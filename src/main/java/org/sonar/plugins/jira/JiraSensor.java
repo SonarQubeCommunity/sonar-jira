@@ -23,6 +23,7 @@ import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteFilter;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePriority;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,12 +93,12 @@ public class JiraSensor implements Sensor {
   }
 
   private void initParams(Project project) {
-    this.serverURL = (String) project.getProperty(JiraPlugin.SERVER_URL);
-    this.projectKey = (String) project.getProperty(JiraPlugin.PROJECT_KEY);
-    this.login = (String) project.getProperty(JiraPlugin.LOGIN);
-    this.password = (String) project.getProperty(JiraPlugin.PASSWORD);
-    String urlParams = (String) project.getProperty(JiraPlugin.URL_PARAMS);
-    this.urlParams = urlParams != null ? urlParams : JiraPlugin.DEFAULT_URL_PARAMS;
+    Configuration configuration = project.getConfiguration();
+    this.serverURL = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
+    this.projectKey = configuration.getString(JiraPlugin.PROJECT_KEY_PROPERTY);
+    this.login = configuration.getString(JiraPlugin.USERNAME_PROPERTY);
+    this.password = configuration.getString(JiraPlugin.PASSWORD_PROPERTY);
+    this.urlParams = configuration.getString(JiraPlugin.URL_PARAMS_PROPERTY, JiraPlugin.URL_PARAMS_DEFAULT_VALUE);
   }
 
   private boolean isMandatoryParametersNotEmpty() {
