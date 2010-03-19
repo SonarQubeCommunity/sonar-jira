@@ -58,6 +58,7 @@ import java.util.List;
         key = JiraPlugin.FILTER_PROPERTY,
         defaultValue = "",
         name = "Filter name",
+        description = "Case sensitive, example : SONAR-current-iteration",
         global = false,
         project = true,
         module = true
