@@ -4,7 +4,7 @@
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
     <version>5</version>
-    <relativePath>../parent/pom.xml</relativePath>
+    <relativePath>../parent</relativePath>
   </parent>
   <artifactId>sonar-jira-plugin</artifactId>
   <version>0.3-SNAPSHOT</version>
