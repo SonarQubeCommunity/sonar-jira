@@ -9,6 +9,7 @@
   <artifactId>sonar-jira-plugin</artifactId>
   <version>0.3-SNAPSHOT</version>
   <name>Sonar JIRA Plugin</name>
+  <description>Retrieves the number of project issues from JIRA.</description>
 
   <properties>
     <sonar.exclusions>com/atlassian/**</sonar.exclusions>
