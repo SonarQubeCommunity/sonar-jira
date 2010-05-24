@@ -76,7 +76,13 @@ public class JiraSensor implements Sensor {
       priorities.put(priority.getId(), priority.getName());
     }
 
-    RemoteFilter[] filters = service.getFavouriteFilters(authToken);
+    RemoteFilter[] filters;
+    try {
+      filters = service.getFavouriteFilters(authToken);
+    } catch (Exception e) {
+      // for Jira prior to 3.13
+      filters = service.getSavedFilters(authToken);
+    }
     RemoteFilter filter = null;
     for (RemoteFilter f : filters) {
       if (filterName.equals(f.getName())) {
