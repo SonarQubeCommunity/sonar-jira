@@ -3,19 +3,21 @@
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>5</version>
+    <version>6-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
   <artifactId>sonar-jira-plugin</artifactId>
   <version>0.3-SNAPSHOT</version>
+  <packaging>sonar-plugin</packaging>
   <name>Sonar JIRA Plugin</name>
   <description>Retrieves the number of project issues from JIRA.</description>
 
   <properties>
-    <sonar.exclusions>com/atlassian/**</sonar.exclusions>
-
     <sonar.version>2.0.1</sonar.version>
-    <pluginArtifact>${project.build.directory}/${project.build.finalName}-shaded.jar</pluginArtifact>
+    <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
+
+    <!-- Exclude generated classes from Sonar analyzes -->
+    <sonar.exclusions>com/atlassian/**</sonar.exclusions>
   </properties>
 
   <developers>
@@ -39,41 +41,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Plugin-Class>org.sonar.plugins.jira.JiraPlugin</Plugin-Class>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>1.3.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <artifactSet>
-                <includes>
-                  <include>axis:*</include>
-                  <include>commons-discovery:commons-discovery</include>
-                  <include>wsdl4j:wsdl4j</include>
-                </includes>
-              </artifactSet>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>axistools-maven-plugin</artifactId>
@@ -117,6 +84,7 @@
       <artifactId>axis</artifactId>
       <version>1.3</version>
       <exclusions>
+        <!-- Provided by Sonar -->
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
