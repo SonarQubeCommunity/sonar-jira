@@ -80,7 +80,8 @@ public class JiraPlugin implements Plugin {
   }
 
   public String getDescription() {
-    return "This plugin retrieves number of issues associated to a project from <a href='http://www.atlassian.com/software/jira/'>JIRA</a>.";
+    return "This plugin retrieves number of issues associated to a project from" +
+        " <a href='http://www.atlassian.com/software/jira/'>JIRA</a>.";
   }
 
   public List<Class<? extends Extension>> getExtensions() {
