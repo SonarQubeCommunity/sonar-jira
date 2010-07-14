@@ -27,16 +27,6 @@
     </license>
   </licenses>
 
-  <properties>
-    <sonar.version>2.2RC2</sonar.version>
-    <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
-
-    <sonarVersion>2.2RC2</sonarVersion>
-
-    <!-- Exclude generated classes from Sonar analyzes -->
-    <sonar.exclusions>com/atlassian/**</sonar.exclusions>
-  </properties>
-
   <developers>
     <developer>
       <id>julien.lancelot</id>
@@ -56,37 +46,29 @@
     </developer>
   </developers>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>axistools-maven-plugin</artifactId>
-        <version>1.3</version>
-        <dependencies>
-          <dependency>
-            <groupId>axis</groupId>
-            <artifactId>axis</artifactId>
-            <version>1.3</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <wsdlFiles>
-            <wsdlFile>jirasoapservice-v2.wsdl</wsdlFile>
-          </wsdlFiles>
-          <packageSpace>com.atlassian.jira.rpc.soap.client</packageSpace>
-        </configuration>
-        <executions>
-          <execution>
-            <id>wsdl2java-generation</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>wsdl2java</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <scm>
+    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/trunk/jira</developerConnection>
+    <url>http://svn.sonar-plugins.codehaus.org</url>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/browse/SONARPLUGINS/component/13914</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Bamboo</system>
+    <url>http://ci.codehaus.org/browse/SONAR-JIRA</url>
+  </ciManagement>
+
+  <properties>
+    <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
+    <sonar.version>2.2</sonar.version>
+
+    <sonarVersion>2.2</sonarVersion>
+
+    <!-- Exclude generated classes from Sonar analyzes -->
+    <sonar.exclusions>com/atlassian/**</sonar.exclusions>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -125,19 +107,36 @@
     </dependency>
   </dependencies>
 
-  <scm>
-    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/trunk/jira</developerConnection>
-    <url>http://svn.sonar-plugins.codehaus.org</url>
-  </scm>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>axistools-maven-plugin</artifactId>
+        <version>1.3</version>
+        <dependencies>
+          <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis</artifactId>
+            <version>1.3</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <wsdlFiles>
+            <wsdlFile>jirasoapservice-v2.wsdl</wsdlFile>
+          </wsdlFiles>
+          <packageSpace>com.atlassian.jira.rpc.soap.client</packageSpace>
+        </configuration>
+        <executions>
+          <execution>
+            <id>wsdl2java-generation</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>wsdl2java</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-  <issueManagement>
-    <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/SONARPLUGINS/component/13914</url>
-  </issueManagement>
-
-  <ciManagement>
-    <system>Bamboo</system>
-    <url>http://ci.codehaus.org/browse/SONAR-JIRA</url>
-  </ciManagement>
 </project>
