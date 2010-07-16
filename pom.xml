@@ -64,8 +64,6 @@
     <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
     <sonar.version>2.2</sonar.version>
 
-    <sonarVersion>2.2</sonarVersion>
-
     <!-- Exclude generated classes from Sonar analyzes -->
     <sonar.exclusions>com/atlassian/**</sonar.exclusions>
   </properties>
