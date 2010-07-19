@@ -52,7 +52,7 @@ public class JiraSensor implements Sensor {
   public void analyse(Project project, SensorContext context) {
     initParams(project);
     if (!isMandatoryParametersNotEmpty()) {
-      LOG.warn("The server url, the project key, the username and the password must not be empty.");
+      LOG.warn("The server url, the filter name, the username and the password must not be empty.");
       return;
     }
     try {
@@ -127,6 +127,7 @@ public class JiraSensor implements Sensor {
 
   private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverUrl) &&
+        StringUtils.isNotEmpty(filterName) &&
         StringUtils.isNotEmpty(username) &&
         StringUtils.isNotEmpty(password);
   }
