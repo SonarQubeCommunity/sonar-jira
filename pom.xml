@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>sonar-jira-plugin</artifactId>
-  <version>0.2.1</version>
+  <version>0.3-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
 
   <name>Sonar JIRA Plugin</name>
@@ -43,9 +43,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.2.1</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.2.1</developerConnection>
-    <url>scm:svn:https://svn.codehaus.org/sonar-plugins/tags/sonar-jira-plugin-0.2.1</url>
+    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/trunk/jira</developerConnection>
+    <url>http://svn.sonar-plugins.codehaus.org</url>
   </scm>
   <issueManagement>
     <system>JIRA</system>
