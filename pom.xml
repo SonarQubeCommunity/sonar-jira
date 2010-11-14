@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>6</version>
+    <version>7</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -58,6 +58,7 @@
 
   <properties>
     <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
+    <sonar.pluginName>Jira</sonar.pluginName>
     <sonar.version>2.2</sonar.version>
 
     <!-- Exclude generated classes from Sonar analyzes -->
