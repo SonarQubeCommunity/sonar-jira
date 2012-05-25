@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.plugins.jira;
+package org.sonar.plugins.jira.metrics;
 
 import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteFilter;
@@ -28,12 +28,15 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.Properties;
+import org.sonar.api.Property;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
 import org.sonar.api.utils.SonarException;
+import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
 import java.net.URL;
@@ -41,6 +44,17 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Properties({
+  @Property(
+    key = JiraConstants.FILTER_PROPERTY,
+    defaultValue = "",
+    name = "Filter name",
+    description = "Case sensitive, example : SONAR-current-iteration",
+    global = false,
+    project = true,
+    module = true
+  )
+})
 public class JiraSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
@@ -119,17 +133,17 @@ public class JiraSensor implements Sensor {
 
   private void initParams(Project project) {
     Configuration configuration = project.getConfiguration();
-    serverUrl = configuration.getString(JiraPlugin.SERVER_URL_PROPERTY);
-    username = configuration.getString(JiraPlugin.USERNAME_PROPERTY);
-    password = configuration.getString(JiraPlugin.PASSWORD_PROPERTY);
-    filterName = configuration.getString(JiraPlugin.FILTER_PROPERTY);
+    serverUrl = configuration.getString(JiraConstants.SERVER_URL_PROPERTY);
+    username = configuration.getString(JiraConstants.USERNAME_PROPERTY);
+    password = configuration.getString(JiraConstants.PASSWORD_PROPERTY);
+    filterName = configuration.getString(JiraConstants.FILTER_PROPERTY);
   }
 
   private boolean isMandatoryParametersNotEmpty() {
     return StringUtils.isNotEmpty(serverUrl) &&
-        StringUtils.isNotEmpty(filterName) &&
-        StringUtils.isNotEmpty(username) &&
-        StringUtils.isNotEmpty(password);
+      StringUtils.isNotEmpty(filterName) &&
+      StringUtils.isNotEmpty(username) &&
+      StringUtils.isNotEmpty(password);
   }
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {

@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>sonar-jira-plugin</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
 
   <name>Sonar JIRA Plugin</name>
@@ -40,6 +40,10 @@
       <id>godin</id>
       <name>Evgeny Mandrikov</name>
     </developer>
+    <developer>
+      <id>fabemn</id>
+      <name>Fabrice Bellingard</name>
+    </developer>
   </developers>
 
   <scm>
@@ -59,7 +63,7 @@
   <properties>
     <sonar.pluginClass>org.sonar.plugins.jira.JiraPlugin</sonar.pluginClass>
     <sonar.pluginName>Jira</sonar.pluginName>
-    <sonar.version>2.2</sonar.version>
+    <sonar.version>3.1-SNAPSHOT</sonar.version>
 
     <!-- Exclude generated classes from Sonar analyzes -->
     <sonar.exclusions>com/atlassian/**</sonar.exclusions>
@@ -69,6 +73,12 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-plugin-api</artifactId>
+      <version>${sonar.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.sonar</groupId>
+      <artifactId>sonar-core</artifactId>
       <version>${sonar.version}</version>
       <scope>provided</scope>
     </dependency>

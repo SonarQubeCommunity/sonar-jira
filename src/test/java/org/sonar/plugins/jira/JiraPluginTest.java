@@ -25,12 +25,9 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-/**
- * @author Evgeny Mandrikov
- */
 public class JiraPluginTest {
   @Test
   public void testGetExtensions() throws Exception {
-    assertThat(new JiraPlugin().getExtensions().size(), is(3));
+    assertThat(new JiraPlugin().getExtensions().size(), is(6));
   }
 }

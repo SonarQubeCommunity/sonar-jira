@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.plugins.jira;
+package org.sonar.plugins.jira.metrics;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +29,11 @@ import org.sonar.api.test.IsMeasure;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-/**
- * @author Evgeny Mandrikov
- */
 public class JiraSensorTest {
   private JiraSensor sensor;
 

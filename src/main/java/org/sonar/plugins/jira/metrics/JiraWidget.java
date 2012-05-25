@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.plugins.jira;
+package org.sonar.plugins.jira.metrics;
 
 import org.sonar.api.web.AbstractRubyTemplate;
 import org.sonar.api.web.RubyRailsWidget;
@@ -34,6 +34,6 @@ public class JiraWidget extends AbstractRubyTemplate implements RubyRailsWidget 
 
   @Override
   protected String getTemplatePath() {
-    return "/org/sonar/plugins/jira/jiraWidget.erb";
+    return "/org/sonar/plugins/jira/metrics/jiraWidget.erb";
   }
 }

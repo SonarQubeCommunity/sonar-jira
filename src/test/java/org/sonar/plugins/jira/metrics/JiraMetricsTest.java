@@ -18,31 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.plugins.jira;
+package org.sonar.plugins.jira.metrics;
 
+import org.junit.Test;
 import org.sonar.api.measures.Metric;
-import org.sonar.api.measures.Metrics;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class JiraMetrics implements Metrics {
-  public static final String DOMAIN = "Issues";
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-  public final static Metric ISSUES = new Metric(
-      "issues",
-      "JIRA Issues",
-      "Number of JIRA Issues",
-      Metric.ValueType.INT,
-      Metric.DIRECTION_NONE,
-      false,
-      DOMAIN
-  );
-
-  public List<Metric> getMetrics() {
-    return Arrays.asList(
-        ISSUES
-    );
+public class JiraMetricsTest {
+  @Test
+  public void testGetMetrics() throws Exception {
+    List<Metric> metrics = new JiraMetrics().getMetrics();
+    assertThat(metrics.size(), is(1));
+    for (Metric metric : metrics) {
+      assertThat(metric.getDomain(), is(JiraMetrics.DOMAIN));
+    }
   }
-
 }

@@ -27,11 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.rpc.ServiceException;
+
 import java.net.URL;
 import java.rmi.RemoteException;
 
 /**
- * @author Evgeny Mandrikov
+ * This represents a SOAP session with JIRA including that state of being logged in or not
  */
 public class JiraSoapSession {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSoapSession.class);
@@ -39,18 +40,20 @@ public class JiraSoapSession {
   private JiraSoapServiceService jiraSoapServiceLocator;
   private JiraSoapService jiraSoapService;
   private String token;
+  private URL webServiceUrl;
 
-  public JiraSoapSession(URL webServicePort) {
+  public JiraSoapSession(URL url) {
+    this.webServiceUrl = url;
     jiraSoapServiceLocator = new JiraSoapServiceServiceLocator();
     try {
-      if (webServicePort == null) {
+      if (url == null) {
         jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2();
       } else {
-        jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2(webServicePort);
-        LOG.debug("SOAP Session service endpoint at " + webServicePort.toExternalForm());
+        jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2(url);
+        LOG.debug("SOAP Session service endpoint at " + url.toExternalForm());
       }
     } catch (ServiceException e) {
-      throw new RuntimeException("ServiceException during SOAPClient contruction", e);
+      throw new RuntimeException("ServiceException during JiraSoapService contruction", e);
     }
   }
 
@@ -74,5 +77,9 @@ public class JiraSoapSession {
 
   public JiraSoapServiceService getJiraSoapServiceLocator() {
     return jiraSoapServiceLocator;
+  }
+
+  public URL getWebServiceUrl() {
+    return webServiceUrl;
   }
 }

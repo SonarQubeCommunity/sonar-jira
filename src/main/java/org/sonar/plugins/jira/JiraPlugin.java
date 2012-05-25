@@ -24,52 +24,44 @@ import org.sonar.api.Extension;
 import org.sonar.api.Plugin;
 import org.sonar.api.Properties;
 import org.sonar.api.Property;
+import org.sonar.plugins.jira.metrics.JiraMetrics;
+import org.sonar.plugins.jira.metrics.JiraSensor;
+import org.sonar.plugins.jira.metrics.JiraWidget;
+import org.sonar.plugins.jira.reviews.JiraIssueCreator;
+import org.sonar.plugins.jira.reviews.LinkFunction;
+import org.sonar.plugins.jira.reviews.WorkflowBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Properties({
-    @Property(
-        key = JiraPlugin.SERVER_URL_PROPERTY,
-        defaultValue = "",
-        name = "Server URL",
-        description = "Example : http://jira.codehaus.org",
-        global = true,
-        project = true,
-        module = false
-    ),
-    @Property(
-        key = JiraPlugin.USERNAME_PROPERTY,
-        defaultValue = "",
-        name = "Username",
-        global = true,
-        project = true,
-        module = false
-    ),
-    @Property(
-        key = JiraPlugin.PASSWORD_PROPERTY,
-        defaultValue = "",
-        name = "Password",
-        global = true,
-        project = true,
-        module = false
-    ),
-    @Property(
-        key = JiraPlugin.FILTER_PROPERTY,
-        defaultValue = "",
-        name = "Filter name",
-        description = "Case sensitive, example : SONAR-current-iteration",
-        global = false,
-        project = true,
-        module = true
-    )
+  @Property(
+    key = JiraConstants.SERVER_URL_PROPERTY,
+    defaultValue = "",
+    name = "Server URL",
+    description = "Example : http://jira.codehaus.org",
+    global = true,
+    project = true,
+    module = false
+  ),
+  @Property(
+    key = JiraConstants.USERNAME_PROPERTY,
+    defaultValue = "",
+    name = "Username",
+    global = true,
+    project = true,
+    module = false
+  ),
+  @Property(
+    key = JiraConstants.PASSWORD_PROPERTY,
+    defaultValue = "",
+    name = "Password",
+    global = true,
+    project = true,
+    module = false
+  )
 })
 public class JiraPlugin implements Plugin {
-  public final static String SERVER_URL_PROPERTY = "sonar.jira.url";
-  public final static String USERNAME_PROPERTY = "sonar.jira.login.secured";
-  public final static String PASSWORD_PROPERTY = "sonar.jira.password.secured";
-  public final static String FILTER_PROPERTY = "sonar.jira.url.param";
 
   public String getKey() {
     return "jira";
@@ -80,15 +72,21 @@ public class JiraPlugin implements Plugin {
   }
 
   public String getDescription() {
-    return "This plugin retrieves number of issues associated to a project from" +
-        " <a href='http://www.atlassian.com/software/jira/'>JIRA</a>.";
+    return "This plugin offers several features link to " +
+      " <a href='http://www.atlassian.com/software/jira/'>JIRA</a>." +
+      "Check the plugin homepage to know more about it.";
   }
 
   public List<Class<? extends Extension>> getExtensions() {
     List<Class<? extends Extension>> list = new ArrayList<Class<? extends Extension>>();
+    // metrics part
     list.add(JiraMetrics.class);
     list.add(JiraSensor.class);
     list.add(JiraWidget.class);
+    // reviews part
+    list.add(JiraIssueCreator.class);
+    list.add(LinkFunction.class);
+    list.add(WorkflowBuilder.class);
     return list;
   }
 }

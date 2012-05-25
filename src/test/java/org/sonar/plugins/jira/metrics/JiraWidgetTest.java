@@ -18,16 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.plugins.jira;
+package org.sonar.plugins.jira.metrics;
 
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-/**
- * @author Evgeny Mandrikov
- */
 public class JiraWidgetTest {
   @Test
   public void testGetTemplatePath() {
