@@ -21,21 +21,24 @@ package org.sonar.plugins.jira;
 
 public final class JiraConstants {
 
+  private JiraConstants() {
+  }
+
   public static final String REVIEW_DATA_PROPERTY_KEY = "jira-issue-key";
 
   // ===================== PLUGIN PROPERTIES =====================
 
-  public final static String SERVER_URL_PROPERTY = "sonar.jira.url";
+  public static final String SERVER_URL_PROPERTY = "sonar.jira.url";
 
-  public final static String SOAP_BASE_URL_PROPERTY = "sonar.jira.soap.url";
-  public final static String SOAP_BASE_URL_DEF_VALUE = "/rpc/soap/jirasoapservice-v2";
+  public static final String SOAP_BASE_URL_PROPERTY = "sonar.jira.soap.url";
+  public static final String SOAP_BASE_URL_DEF_VALUE = "/rpc/soap/jirasoapservice-v2";
 
-  public final static String USERNAME_PROPERTY = "sonar.jira.login.secured";
+  public static final String USERNAME_PROPERTY = "sonar.jira.login.secured";
 
-  public final static String PASSWORD_PROPERTY = "sonar.jira.password.secured";
+  public static final String PASSWORD_PROPERTY = "sonar.jira.password.secured";
 
-  public final static String JIRA_PROJECT_KEY_PROPERTY = "sonar.jira.project.key";
+  public static final String JIRA_PROJECT_KEY_PROPERTY = "sonar.jira.project.key";
 
-  public final static String FILTER_PROPERTY = "sonar.jira.url.param";
+  public static final String FILTER_PROPERTY = "sonar.jira.url.param";
 
 }

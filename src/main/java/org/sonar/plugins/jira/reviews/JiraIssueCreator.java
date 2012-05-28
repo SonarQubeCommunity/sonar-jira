@@ -32,6 +32,7 @@ import org.sonar.api.Property;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
 import org.sonar.core.review.workflow.review.Review;
+import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
 import java.net.MalformedURLException;
@@ -62,16 +63,17 @@ import java.util.Map;
 })
 public class JiraIssueCreator implements ServerExtension {
 
+  private static final String QUOTE = "\n{quote}\n";
   private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
   private static final String TASK_ISSUE_TYPE = "3";
-  private static final Map<String, String> sonarSeverityToJiraPriority = Maps.newHashMap();
+  private static final Map<String, String> SONAR_SEVERITY_TO_JIRA_PRIORITY = Maps.newHashMap();
 
   static {
-    sonarSeverityToJiraPriority.put("BLOCKER", "1");
-    sonarSeverityToJiraPriority.put("CRITICAL", "2");
-    sonarSeverityToJiraPriority.put("MAJOR", "3");
-    sonarSeverityToJiraPriority.put("MINOR", "4");
-    sonarSeverityToJiraPriority.put("INFO", "5");
+    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("BLOCKER", "1");
+    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("CRITICAL", "2");
+    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("MAJOR", "3");
+    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("MINOR", "4");
+    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("INFO", "5");
   }
 
   public JiraIssueCreator() {
@@ -157,14 +159,14 @@ public class JiraIssueCreator implements ServerExtension {
 
   protected String generateIssueDescription(Review review, Settings settings, String commentText) {
     StringBuilder description = new StringBuilder("Violation detail:");
-    description.append("\n{quote}\n");
+    description.append(QUOTE);
     description.append(review.getMessage());
-    description.append("\n{quote}\n");
+    description.append(QUOTE);
     if (StringUtils.isNotBlank(commentText)) {
       description.append("\nMessage from reviewer:");
-      description.append("\n{quote}\n");
+      description.append(QUOTE);
       description.append(commentText);
-      description.append("\n{quote}\n");
+      description.append(QUOTE);
     }
     description.append("\n\nCheck it on Sonar: ");
     description.append(settings.getString("sonar.core.serverBaseURL"));
@@ -174,7 +176,7 @@ public class JiraIssueCreator implements ServerExtension {
   }
 
   protected String sonarSeverityToJiraPriority(String reviewSeverity) {
-    String priority = sonarSeverityToJiraPriority.get(reviewSeverity);
+    String priority = SONAR_SEVERITY_TO_JIRA_PRIORITY.get(reviewSeverity);
     if (priority == null) {
       // default to MAJOR
       priority = "3";

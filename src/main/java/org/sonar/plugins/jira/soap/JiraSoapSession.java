@@ -53,7 +53,7 @@ public class JiraSoapSession {
         LOG.debug("SOAP Session service endpoint at " + url.toExternalForm());
       }
     } catch (ServiceException e) {
-      throw new RuntimeException("ServiceException during JiraSoapService contruction", e);
+      throw new IllegalStateException("ServiceException during JiraSoapService contruction", e);
     }
   }
 

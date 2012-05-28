@@ -40,6 +40,7 @@ import org.sonar.api.utils.SonarException;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -86,8 +87,10 @@ public class JiraSensor implements Sensor {
       analyze(context, service, authToken);
 
       session.disconnect();
-    } catch (Exception e) {
+    } catch (RemoteException e) {
       LOG.error("Error accessing Jira web service, please verify the parameters", e);
+    } catch (MalformedURLException e) {
+      LOG.error("The specified JIRA URL is not valid: " + serverUrl, e);
     }
   }
 

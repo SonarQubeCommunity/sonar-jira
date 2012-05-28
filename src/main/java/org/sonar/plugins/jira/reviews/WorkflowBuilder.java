@@ -22,6 +22,7 @@ package org.sonar.plugins.jira.reviews;
 import org.sonar.api.ServerExtension;
 import org.sonar.core.review.workflow.Workflow;
 import org.sonar.core.review.workflow.screen.CommentScreen;
+import org.sonar.plugins.jira.JiraConstants;
 
 import static org.sonar.core.review.workflow.condition.Conditions.hasProjectProperty;
 import static org.sonar.core.review.workflow.condition.Conditions.hasReviewProperty;

@@ -38,9 +38,7 @@ public class JiraMetrics implements Metrics {
       .create();
 
   public List<Metric> getMetrics() {
-    return Arrays.asList(
-        ISSUES
-        );
+    return Arrays.asList(ISSUES);
   }
 
 }
