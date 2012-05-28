@@ -77,13 +77,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.sonar</groupId>
-      <artifactId>sonar-core</artifactId>
-      <version>${sonar.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>axis</groupId>
       <artifactId>axis</artifactId>
       <version>1.3</version>

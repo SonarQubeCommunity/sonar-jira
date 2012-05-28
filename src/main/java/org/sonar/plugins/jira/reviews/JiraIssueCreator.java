@@ -31,7 +31,7 @@ import org.sonar.api.Properties;
 import org.sonar.api.Property;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
-import org.sonar.core.review.workflow.review.Review;
+import org.sonar.api.workflow.Review;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 

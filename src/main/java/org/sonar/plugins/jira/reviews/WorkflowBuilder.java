@@ -20,20 +20,20 @@
 package org.sonar.plugins.jira.reviews;
 
 import org.sonar.api.ServerExtension;
-import org.sonar.core.review.workflow.Workflow;
-import org.sonar.core.review.workflow.screen.CommentScreen;
+import org.sonar.api.workflow.Workflow;
+import org.sonar.api.workflow.screen.CommentScreen;
 import org.sonar.plugins.jira.JiraConstants;
 
-import static org.sonar.core.review.workflow.condition.Conditions.hasProjectProperty;
-import static org.sonar.core.review.workflow.condition.Conditions.hasReviewProperty;
-import static org.sonar.core.review.workflow.condition.Conditions.not;
-import static org.sonar.core.review.workflow.condition.Conditions.statuses;
+import static org.sonar.api.workflow.condition.Conditions.hasProjectProperty;
+import static org.sonar.api.workflow.condition.Conditions.hasReviewProperty;
+import static org.sonar.api.workflow.condition.Conditions.not;
+import static org.sonar.api.workflow.condition.Conditions.statuses;
 
-public class WorkflowBuilder implements ServerExtension {
+public final class WorkflowBuilder implements ServerExtension {
 
   private static final String LINK_TO_JIRA_ID = "link-to-jira";
-  private Workflow workflow;
-  private LinkFunction linkFunction;
+  private final Workflow workflow;
+  private final LinkFunction linkFunction;
 
   public WorkflowBuilder(Workflow workflow, LinkFunction linkFunction) {
     this.workflow = workflow;

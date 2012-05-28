@@ -25,10 +25,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.config.Settings;
-import org.sonar.core.review.workflow.review.Comment;
-import org.sonar.core.review.workflow.review.MutableReview;
-import org.sonar.core.review.workflow.review.Review;
-import org.sonar.core.review.workflow.review.WorkflowContext;
+import org.sonar.api.workflow.Comment;
+import org.sonar.api.workflow.MutableReview;
+import org.sonar.api.workflow.Review;
+import org.sonar.api.workflow.WorkflowContext;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;

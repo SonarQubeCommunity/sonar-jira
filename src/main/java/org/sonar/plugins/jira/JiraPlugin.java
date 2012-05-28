@@ -20,7 +20,7 @@
 
 package org.sonar.plugins.jira;
 
-import org.sonar.api.Extension;
+import com.google.common.collect.ImmutableList;
 import org.sonar.api.Properties;
 import org.sonar.api.Property;
 import org.sonar.api.SonarPlugin;
@@ -31,7 +31,6 @@ import org.sonar.plugins.jira.reviews.JiraIssueCreator;
 import org.sonar.plugins.jira.reviews.LinkFunction;
 import org.sonar.plugins.jira.reviews.WorkflowBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Properties({
@@ -61,21 +60,15 @@ import java.util.List;
     module = false
   )
 })
-public class JiraPlugin extends SonarPlugin {
+public final class JiraPlugin extends SonarPlugin {
 
-  public List<Class<? extends Extension>> getExtensions() {
-    List<Class<? extends Extension>> list = new ArrayList<Class<? extends Extension>>();
+  public List getExtensions() {
+    return ImmutableList.of(
+      // metrics part
+      JiraMetrics.class, JiraSensor.class, JiraWidget.class,
 
-    // metrics part
-    list.add(JiraMetrics.class);
-    list.add(JiraSensor.class);
-    list.add(JiraWidget.class);
-
-    // reviews part
-    list.add(JiraIssueCreator.class);
-    list.add(LinkFunction.class);
-    list.add(WorkflowBuilder.class);
-
-    return list;
+      // reviews part
+      JiraIssueCreator.class, LinkFunction.class, WorkflowBuilder.class
+    );
   }
 }

@@ -20,9 +20,9 @@
 package org.sonar.plugins.jira.reviews;
 
 import org.junit.Test;
-import org.sonar.core.review.workflow.Workflow;
-import org.sonar.core.review.workflow.condition.Condition;
-import org.sonar.core.review.workflow.screen.Screen;
+import org.sonar.api.workflow.Workflow;
+import org.sonar.api.workflow.condition.Condition;
+import org.sonar.api.workflow.screen.Screen;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

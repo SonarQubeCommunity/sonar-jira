@@ -22,11 +22,11 @@ package org.sonar.plugins.jira.reviews;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.ServerExtension;
-import org.sonar.core.review.workflow.function.Function;
-import org.sonar.core.review.workflow.review.Comment;
-import org.sonar.core.review.workflow.review.MutableReview;
-import org.sonar.core.review.workflow.review.Review;
-import org.sonar.core.review.workflow.review.WorkflowContext;
+import org.sonar.api.workflow.function.Function;
+import org.sonar.api.workflow.Comment;
+import org.sonar.api.workflow.MutableReview;
+import org.sonar.api.workflow.Review;
+import org.sonar.api.workflow.WorkflowContext;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;
@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class LinkFunction extends Function implements ServerExtension {
 
-  private JiraIssueCreator jiraIssueCreator;
+  private final JiraIssueCreator jiraIssueCreator;
 
   public LinkFunction(JiraIssueCreator jiraIssueCreator) {
     this.jiraIssueCreator = jiraIssueCreator;
@@ -42,7 +42,7 @@ public class LinkFunction extends Function implements ServerExtension {
 
   @Override
   public void doExecute(MutableReview review, Review initialReview, WorkflowContext context, Map<String, String> parameters) {
-    RemoteIssue issue = null;
+    RemoteIssue issue;
     try {
       issue = jiraIssueCreator.createIssue(initialReview, context.getProjectSettings(), parameters.get("text"));
     } catch (RemoteException e) {
