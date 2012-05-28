@@ -23,12 +23,22 @@ package org.sonar.plugins.jira.metrics;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class JiraWidgetTest {
+
   @Test
   public void testGetTemplatePath() {
     String path = new JiraWidget().getTemplatePath();
     assertThat(getClass().getResource(path), notNullValue());
   }
+
+  @Test
+  public void testNameAndTitle() throws Exception {
+    JiraWidget widget = new JiraWidget();
+    assertThat(widget.getId(), is("jira"));
+    assertThat(widget.getTitle(), is("JIRA issues"));
+  }
+
 }

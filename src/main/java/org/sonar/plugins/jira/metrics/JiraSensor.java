@@ -36,14 +36,12 @@ import org.sonar.api.config.Settings;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
-import org.sonar.api.utils.SonarException;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.Map;
 
 @Properties({
@@ -73,7 +71,7 @@ public class JiraSensor implements Sensor {
   }
 
   public void analyse(Project project, SensorContext context) {
-    if (!isMandatoryParametersNotEmpty()) {
+    if (missingMandatoryParameters()) {
       LOG.warn("The server url, the filter name, the username and the password must not be empty.");
       return;
     }
@@ -84,7 +82,7 @@ public class JiraSensor implements Sensor {
       JiraSoapService service = session.getJiraSoapService();
       String authToken = session.getAuthenticationToken();
 
-      analyze(context, service, authToken);
+      runAnalysis(context, service, authToken);
 
       session.disconnect();
     } catch (RemoteException e) {
@@ -94,40 +92,10 @@ public class JiraSensor implements Sensor {
     }
   }
 
-  private void analyze(SensorContext context, JiraSoapService service, String authToken) throws RemoteException {
-    Map<String, String> priorities = Maps.newHashMap();
-    for (RemotePriority priority : service.getPriorities(authToken)) {
-      priorities.put(priority.getId(), priority.getName());
-    }
-
-    RemoteFilter[] filters;
-    try {
-      filters = service.getFavouriteFilters(authToken);
-    } catch (Exception e) {
-      // for Jira prior to 3.13
-      filters = service.getSavedFilters(authToken);
-    }
-    RemoteFilter filter = null;
-    for (RemoteFilter f : filters) {
-      if (filterName.equals(f.getName())) {
-        filter = f;
-      }
-    }
-
-    if (filter == null) {
-      throw new SonarException("Unable to find filter '" + filterName + "' in JIRA");
-    }
-
-    RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
-    Map<String, Integer> issuesByPriority = new HashMap<String, Integer>();
-    for (RemoteIssue issue : issues) {
-      String priority = issue.getPriority();
-      if (!issuesByPriority.containsKey(priority)) {
-        issuesByPriority.put(priority, 1);
-      } else {
-        issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
-      }
-    }
+  protected void runAnalysis(SensorContext context, JiraSoapService service, String authToken) throws RemoteException {
+    Map<String, String> priorities = collectPriorities(service, authToken);
+    RemoteFilter filter = findJiraFilter(service, authToken);
+    Map<String, Integer> issuesByPriority = collectIssuesByPriority(service, authToken, filter);
 
     double total = 0;
     PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
@@ -140,11 +108,55 @@ public class JiraSensor implements Sensor {
     saveMeasures(context, url, total, distribution.buildData());
   }
 
-  private boolean isMandatoryParametersNotEmpty() {
-    return StringUtils.isNotEmpty(serverUrl) &&
-      StringUtils.isNotEmpty(filterName) &&
-      StringUtils.isNotEmpty(username) &&
-      StringUtils.isNotEmpty(password);
+  protected Map<String, String> collectPriorities(JiraSoapService service, String authToken) throws RemoteException {
+    Map<String, String> priorities = Maps.newHashMap();
+    for (RemotePriority priority : service.getPriorities(authToken)) {
+      priorities.put(priority.getId(), priority.getName());
+    }
+    return priorities;
+  }
+
+  protected Map<String, Integer> collectIssuesByPriority(JiraSoapService service, String authToken, RemoteFilter filter) throws RemoteException {
+    Map<String, Integer> issuesByPriority = Maps.newHashMap();
+    RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
+    for (RemoteIssue issue : issues) {
+      String priority = issue.getPriority();
+      if (!issuesByPriority.containsKey(priority)) {
+        issuesByPriority.put(priority, 1);
+      } else {
+        issuesByPriority.put(priority, issuesByPriority.get(priority) + 1);
+      }
+    }
+    return issuesByPriority;
+  }
+
+  protected RemoteFilter findJiraFilter(JiraSoapService service, String authToken) throws RemoteException {
+    RemoteFilter filter = null;
+    RemoteFilter[] filters;
+    try {
+      filters = service.getFavouriteFilters(authToken);
+    } catch (Exception e) {
+      // for Jira prior to 3.13
+      filters = service.getSavedFilters(authToken);
+    }
+    for (RemoteFilter f : filters) {
+      if (filterName.equals(f.getName())) {
+        filter = f;
+        continue;
+      }
+    }
+
+    if (filter == null) {
+      throw new IllegalStateException("Unable to find filter '" + filterName + "' in JIRA");
+    }
+    return filter;
+  }
+
+  protected boolean missingMandatoryParameters() {
+    return StringUtils.isEmpty(serverUrl) ||
+      StringUtils.isEmpty(filterName) ||
+      StringUtils.isEmpty(username) ||
+      StringUtils.isEmpty(password);
   }
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {

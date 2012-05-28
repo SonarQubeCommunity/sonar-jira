@@ -31,7 +31,7 @@ public class JiraWidget extends AbstractRubyTemplate implements RubyRailsWidget 
   }
 
   public String getTitle() {
-    return "Jira";
+    return "JIRA issues";
   }
 
   @Override
