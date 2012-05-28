@@ -64,6 +64,11 @@ public class JiraSensorTest {
   }
 
   @Test
+  public void testToString() throws Exception {
+    assertThat(sensor.toString(), is("JIRA issues sensor"));
+  }
+
+  @Test
   public void testPresenceOfProperties() throws Exception {
     assertThat(sensor.missingMandatoryParameters(), is(false));
 
@@ -85,11 +90,26 @@ public class JiraSensorTest {
   }
 
   @Test
-  public void shouldExecuteOnProject() throws Exception {
+  public void shouldExecuteOnRootProjectWithAllParams() throws Exception {
     Project project = mock(Project.class);
     when(project.isRoot()).thenReturn(true).thenReturn(false);
 
     assertThat(sensor.shouldExecuteOnProject(project), is(true));
+  }
+
+  @Test
+  public void shouldNotExecuteOnNonRootProject() throws Exception {
+    assertThat(sensor.shouldExecuteOnProject(mock(Project.class)), is(false));
+  }
+
+  @Test
+  public void shouldNotExecuteOnRootProjectifOneParamMissing() throws Exception {
+    Project project = mock(Project.class);
+    when(project.isRoot()).thenReturn(true).thenReturn(false);
+
+    settings.removeProperty(JiraConstants.SERVER_URL_PROPERTY);
+    sensor = new JiraSensor(settings);
+
     assertThat(sensor.shouldExecuteOnProject(project), is(false));
   }
 

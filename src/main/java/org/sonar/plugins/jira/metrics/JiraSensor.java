@@ -70,11 +70,14 @@ public class JiraSensor implements Sensor {
     filterName = settings.getString(JiraConstants.FILTER_PROPERTY);
   }
 
-  public void analyse(Project project, SensorContext context) {
+  public boolean shouldExecuteOnProject(Project project) {
     if (missingMandatoryParameters()) {
-      LOG.warn("The server url, the filter name, the username and the password must not be empty.");
-      return;
+      LOG.info("JIRA issues sensor will not run as some parameters are missing.");
     }
+    return project.isRoot() && !missingMandatoryParameters();
+  }
+
+  public void analyse(Project project, SensorContext context) {
     try {
       JiraSoapSession session = new JiraSoapSession(new URL(serverUrl + "/rpc/soap/jirasoapservice-v2"));
       session.connect(username, password);
@@ -166,12 +169,8 @@ public class JiraSensor implements Sensor {
     context.saveMeasure(issuesMeasure);
   }
 
-  public boolean shouldExecuteOnProject(Project project) {
-    return project.isRoot();
-  }
-
   @Override
   public String toString() {
-    return getClass().getSimpleName();
+    return "JIRA issues sensor";
   }
 }
