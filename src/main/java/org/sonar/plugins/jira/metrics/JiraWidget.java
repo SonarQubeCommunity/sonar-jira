@@ -36,6 +36,6 @@ public class JiraWidget extends AbstractRubyTemplate implements RubyRailsWidget 
 
   @Override
   protected String getTemplatePath() {
-    return "/org/sonar/plugins/jira/metrics/jiraWidget.erb";
+    return "/org/sonar/plugins/jira/metrics/jiraWidget.html.erb";
   }
 }
