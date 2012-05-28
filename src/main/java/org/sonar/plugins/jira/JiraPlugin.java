@@ -21,9 +21,9 @@
 package org.sonar.plugins.jira;
 
 import org.sonar.api.Extension;
-import org.sonar.api.Plugin;
 import org.sonar.api.Properties;
 import org.sonar.api.Property;
+import org.sonar.api.SonarPlugin;
 import org.sonar.plugins.jira.metrics.JiraMetrics;
 import org.sonar.plugins.jira.metrics.JiraSensor;
 import org.sonar.plugins.jira.metrics.JiraWidget;
@@ -61,32 +61,21 @@ import java.util.List;
     module = false
   )
 })
-public class JiraPlugin implements Plugin {
-
-  public String getKey() {
-    return "jira";
-  }
-
-  public String getName() {
-    return "JIRA";
-  }
-
-  public String getDescription() {
-    return "This plugin offers several features link to " +
-      " <a href='http://www.atlassian.com/software/jira/'>JIRA</a>." +
-      "Check the plugin homepage to know more about it.";
-  }
+public class JiraPlugin extends SonarPlugin {
 
   public List<Class<? extends Extension>> getExtensions() {
     List<Class<? extends Extension>> list = new ArrayList<Class<? extends Extension>>();
+
     // metrics part
     list.add(JiraMetrics.class);
     list.add(JiraSensor.class);
     list.add(JiraWidget.class);
+
     // reviews part
     list.add(JiraIssueCreator.class);
     list.add(LinkFunction.class);
     list.add(WorkflowBuilder.class);
+
     return list;
   }
 }

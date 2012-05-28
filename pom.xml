@@ -12,7 +12,7 @@
   <packaging>sonar-plugin</packaging>
 
   <name>Sonar JIRA Plugin</name>
-  <description>Retrieves the number of project issues from Atlassian JIRA.</description>
+  <description>Connects Sonar to Atlassian JIRA in various ways.</description>
   <url>http://docs.codehaus.org/display/SONAR/Jira+Plugin</url>
 
   <organization>

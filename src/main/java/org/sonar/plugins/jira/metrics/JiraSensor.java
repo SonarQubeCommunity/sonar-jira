@@ -24,7 +24,7 @@ import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteFilter;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePriority;
-import org.apache.commons.configuration.Configuration;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,7 @@ import org.sonar.api.Properties;
 import org.sonar.api.Property;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
+import org.sonar.api.config.Settings;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
@@ -63,8 +64,14 @@ public class JiraSensor implements Sensor {
   private String password;
   private String filterName;
 
+  public JiraSensor(Settings settings) {
+    serverUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
+    username = settings.getString(JiraConstants.USERNAME_PROPERTY);
+    password = settings.getString(JiraConstants.PASSWORD_PROPERTY);
+    filterName = settings.getString(JiraConstants.FILTER_PROPERTY);
+  }
+
   public void analyse(Project project, SensorContext context) {
-    initParams(project);
     if (!isMandatoryParametersNotEmpty()) {
       LOG.warn("The server url, the filter name, the username and the password must not be empty.");
       return;
@@ -85,8 +92,7 @@ public class JiraSensor implements Sensor {
   }
 
   private void analyze(SensorContext context, JiraSoapService service, String authToken) throws RemoteException {
-    // TODO use google-collections
-    Map<String, String> priorities = new HashMap<String, String>();
+    Map<String, String> priorities = Maps.newHashMap();
     for (RemotePriority priority : service.getPriorities(authToken)) {
       priorities.put(priority.getId(), priority.getName());
     }
@@ -129,14 +135,6 @@ public class JiraSensor implements Sensor {
 
     String url = serverUrl + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
     saveMeasures(context, url, total, distribution.buildData());
-  }
-
-  private void initParams(Project project) {
-    Configuration configuration = project.getConfiguration();
-    serverUrl = configuration.getString(JiraConstants.SERVER_URL_PROPERTY);
-    username = configuration.getString(JiraConstants.USERNAME_PROPERTY);
-    password = configuration.getString(JiraConstants.PASSWORD_PROPERTY);
-    filterName = configuration.getString(JiraConstants.FILTER_PROPERTY);
   }
 
   private boolean isMandatoryParametersNotEmpty() {

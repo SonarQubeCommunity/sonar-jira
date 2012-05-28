@@ -23,6 +23,7 @@ package org.sonar.plugins.jira.metrics;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.batch.SensorContext;
+import org.sonar.api.config.Settings;
 import org.sonar.api.resources.Project;
 import org.sonar.api.test.IsMeasure;
 
@@ -39,7 +40,7 @@ public class JiraSensorTest {
 
   @Before
   public void setUp() {
-    sensor = new JiraSensor();
+    sensor = new JiraSensor(new Settings());
   }
 
   @Test
