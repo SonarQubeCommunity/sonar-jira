@@ -26,7 +26,7 @@ import org.sonar.api.measures.Metrics;
 import java.util.Arrays;
 import java.util.List;
 
-public class JiraMetrics implements Metrics {
+public final class JiraMetrics implements Metrics {
   public static final String ISSUES_DOMAIN = "Issues";
 
   public static final String ISSUES_KEY = "issues";

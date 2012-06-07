@@ -23,7 +23,7 @@ import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +66,13 @@ public class JiraIssueCreator implements ServerExtension {
   private static final String QUOTE = "\n{quote}\n";
   private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
   private static final String TASK_ISSUE_TYPE = "3";
-  private static final Map<String, String> SONAR_SEVERITY_TO_JIRA_PRIORITY = Maps.newHashMap();
-
-  static {
-    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("BLOCKER", "1");
-    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("CRITICAL", "2");
-    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("MAJOR", "3");
-    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("MINOR", "4");
-    SONAR_SEVERITY_TO_JIRA_PRIORITY.put("INFO", "5");
-  }
+  private static final Map<String, String> SONAR_SEVERITY_TO_JIRA_PRIORITY = new ImmutableMap.Builder<String, String>()
+    .put("BLOCKER", "1")
+    .put("CRITICAL", "2")
+    .put("MAJOR", "3")
+    .put("MINOR", "4")
+    .put("INFO", "5")
+    .build();
 
   public JiraIssueCreator() {
   }

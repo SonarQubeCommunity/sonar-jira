@@ -36,7 +36,6 @@ import java.util.List;
 @Properties({
   @Property(
     key = JiraConstants.SERVER_URL_PROPERTY,
-    defaultValue = "",
     name = "Server URL",
     description = "Example : http://jira.codehaus.org",
     global = true,
@@ -53,7 +52,6 @@ import java.util.List;
   ),
   @Property(
     key = JiraConstants.PASSWORD_PROPERTY,
-    defaultValue = "",
     name = "Password",
     global = true,
     project = true,
