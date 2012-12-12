@@ -23,14 +23,17 @@ import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.CoreProperties;
 import org.sonar.api.Properties;
 import org.sonar.api.Property;
+import org.sonar.api.PropertyType;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
+import org.sonar.api.rules.RulePriority;
+import org.sonar.api.utils.SonarException;
 import org.sonar.api.workflow.Review;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
@@ -38,7 +41,6 @@ import org.sonar.plugins.jira.soap.JiraSoapSession;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.Map;
 
 /**
  * SOAP client class that is used for creating issues on a JIRA server
@@ -59,6 +61,51 @@ import java.util.Map;
     description = "Key of the JIRA project on which the issues should be created.",
     global = false,
     project = true
+  ),
+  @Property(
+    key = JiraConstants.JIRA_INFO_PRIORITY_ID,
+    defaultValue = "5",
+    name = "JIRA priority id for INFO",
+    description = "JIRA priority id used to create issues for Sonar violation with severity INFO. Default is 5 (Trivial).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_MINOR_PRIORITY_ID,
+    defaultValue = "4",
+    name = "JIRA priority id for MINOR",
+    description = "JIRA priority id used to create issues for Sonar violation with severity MINOR. Default is 4 (Minor).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_MAJOR_PRIORITY_ID,
+    defaultValue = "3",
+    name = "JIRA priority id for MAJOR",
+    description = "JIRA priority id used to create issues for Sonar violation with severity MAJOR. Default is 3 (Major).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_CRITICAL_PRIORITY_ID,
+    defaultValue = "2",
+    name = "JIRA priority id for CRITICAL",
+    description = "JIRA priority id used to create issues for Sonar violation with severity CRITICAL. Default is 2 (Critical).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_BLOCKER_PRIORITY_ID,
+    defaultValue = "1",
+    name = "JIRA priority id for BLOCKER",
+    description = "JIRA priority id used to create issues for Sonar violation with severity BLOCKER. Default is 1 (Blocker).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
   )
 })
 public class JiraIssueCreator implements ServerExtension {
@@ -66,13 +113,6 @@ public class JiraIssueCreator implements ServerExtension {
   private static final String QUOTE = "\n{quote}\n";
   private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
   private static final String TASK_ISSUE_TYPE = "3";
-  private static final Map<String, String> SONAR_SEVERITY_TO_JIRA_PRIORITY = new ImmutableMap.Builder<String, String>()
-    .put("BLOCKER", "1")
-    .put("CRITICAL", "2")
-    .put("MAJOR", "3")
-    .put("MINOR", "4")
-    .put("INFO", "5")
-    .build();
 
   public JiraIssueCreator() {
   }
@@ -141,7 +181,7 @@ public class JiraIssueCreator implements ServerExtension {
     RemoteIssue issue = new RemoteIssue();
     issue.setProject(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
     issue.setType(TASK_ISSUE_TYPE);
-    issue.setPriority(sonarSeverityToJiraPriority(review.getSeverity()));
+    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
     issue.setSummary(generateIssueSummary(review));
     issue.setDescription(generateIssueDescription(review, settings, commentText));
     return issue;
@@ -167,19 +207,27 @@ public class JiraIssueCreator implements ServerExtension {
       description.append(QUOTE);
     }
     description.append("\n\nCheck it on Sonar: ");
-    description.append(settings.getString("sonar.core.serverBaseURL"));
+    description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
     description.append("/project_reviews/view/");
     description.append(review.getReviewId());
     return description.toString();
   }
 
-  protected String sonarSeverityToJiraPriority(String reviewSeverity) {
-    String priority = SONAR_SEVERITY_TO_JIRA_PRIORITY.get(reviewSeverity);
-    if (priority == null) {
-      // default to MAJOR
-      priority = "3";
+  protected String sonarSeverityToJiraPriorityId(RulePriority reviewSeverity, Settings settings) {
+    switch (reviewSeverity) {
+      case INFO:
+        return settings.getString(JiraConstants.JIRA_INFO_PRIORITY_ID);
+      case MINOR:
+        return settings.getString(JiraConstants.JIRA_MINOR_PRIORITY_ID);
+      case MAJOR:
+        return settings.getString(JiraConstants.JIRA_MAJOR_PRIORITY_ID);
+      case CRITICAL:
+        return settings.getString(JiraConstants.JIRA_CRITICAL_PRIORITY_ID);
+      case BLOCKER:
+        return settings.getString(JiraConstants.JIRA_BLOCKER_PRIORITY_ID);
+      default:
+        throw new SonarException("Unable to convert review severity to JIRA priority: " + reviewSeverity);
     }
-    return priority;
   }
 
 }

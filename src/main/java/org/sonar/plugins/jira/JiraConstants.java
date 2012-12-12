@@ -41,4 +41,9 @@ public final class JiraConstants {
 
   public static final String FILTER_PROPERTY = "sonar.jira.url.param";
 
+  public static final String JIRA_INFO_PRIORITY_ID = "sonar.jira.info.priority.id";
+  public static final String JIRA_MINOR_PRIORITY_ID = "sonar.jira.minor.priority.id";
+  public static final String JIRA_MAJOR_PRIORITY_ID = "sonar.jira.major.priority.id";
+  public static final String JIRA_CRITICAL_PRIORITY_ID = "sonar.jira.critical.priority.id";
+  public static final String JIRA_BLOCKER_PRIORITY_ID = "sonar.jira.blocker.priority.id";
 }

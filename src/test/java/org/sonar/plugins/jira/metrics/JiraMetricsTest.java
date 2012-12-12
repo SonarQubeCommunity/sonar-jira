@@ -25,16 +25,15 @@ import org.sonar.api.measures.Metric;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 
 public class JiraMetricsTest {
   @Test
   public void testGetMetrics() throws Exception {
     List<Metric> metrics = new JiraMetrics().getMetrics();
-    assertThat(metrics.size(), is(1));
+    assertThat(metrics.size()).isEqualTo(1);
     for (Metric metric : metrics) {
-      assertThat(metric.getDomain(), is(JiraMetrics.ISSUES_DOMAIN));
+      assertThat(metric.getDomain()).isEqualTo(JiraMetrics.ISSUES_DOMAIN);
     }
   }
 }

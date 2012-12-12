@@ -22,11 +22,11 @@ package org.sonar.plugins.jira.reviews;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.ServerExtension;
-import org.sonar.api.workflow.function.Function;
 import org.sonar.api.workflow.Comment;
 import org.sonar.api.workflow.MutableReview;
 import org.sonar.api.workflow.Review;
 import org.sonar.api.workflow.WorkflowContext;
+import org.sonar.api.workflow.function.Function;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;

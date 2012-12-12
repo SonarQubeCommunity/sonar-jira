@@ -27,15 +27,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.sonar.api.CoreProperties;
+import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
+import org.sonar.api.rules.RulePriority;
 import org.sonar.api.workflow.internal.DefaultReview;
 import org.sonar.plugins.jira.JiraConstants;
+import org.sonar.plugins.jira.JiraPlugin;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
 import java.rmi.RemoteException;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -59,13 +62,12 @@ public class JiraIssueCreatorTest {
     review.setSeverity("MINOR");
     review.setRuleName("Wrong identation");
 
-    settings = new Settings();
-    settings.appendProperty("sonar.core.serverBaseURL", "http://my.sonar.com");
-    settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.com");
-    settings.appendProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, JiraConstants.SOAP_BASE_URL_DEF_VALUE);
-    settings.appendProperty(JiraConstants.USERNAME_PROPERTY, "foo");
-    settings.appendProperty(JiraConstants.PASSWORD_PROPERTY, "bar");
-    settings.appendProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "TEST");
+    settings = new Settings(new PropertyDefinitions(JiraIssueCreator.class, JiraPlugin.class));
+    settings.setProperty(CoreProperties.SERVER_BASE_URL, "http://my.sonar.com");
+    settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.com");
+    settings.setProperty(JiraConstants.USERNAME_PROPERTY, "foo");
+    settings.setProperty(JiraConstants.PASSWORD_PROPERTY, "bar");
+    settings.setProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "TEST");
 
     jiraIssueCreator = new JiraIssueCreator();
   }
@@ -73,7 +75,7 @@ public class JiraIssueCreatorTest {
   @Test
   public void shouldCreateSoapSession() throws Exception {
     JiraSoapSession soapSession = jiraIssueCreator.createSoapSession(settings);
-    assertThat(soapSession.getWebServiceUrl().toString(), is("http://my.jira.com/rpc/soap/jirasoapservice-v2"));
+    assertThat(soapSession.getWebServiceUrl().toString()).isEqualTo("http://my.jira.com/rpc/soap/jirasoapservice-v2");
   }
 
   @Test
@@ -156,7 +158,7 @@ public class JiraIssueCreatorTest {
     verify(soapSession).getJiraSoapService();
     verify(soapSession).getAuthenticationToken();
 
-    assertThat(returnedIssue, is(issue));
+    assertThat(returnedIssue).isEqualTo(issue);
   }
 
   @Test
@@ -173,11 +175,15 @@ public class JiraIssueCreatorTest {
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
 
-    assertThat(returnedIssue, is(issue));
+    assertThat(returnedIssue).isEqualTo(issue);
   }
 
   @Test
   public void shouldGiveDefaultPriority() throws Exception {
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriority("UNKNOWN"), is("3"));
+    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.BLOCKER, settings)).isEqualTo("1");
+    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.CRITICAL, settings)).isEqualTo("2");
+    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MAJOR, settings)).isEqualTo("3");
+    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MINOR, settings)).isEqualTo("4");
+    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.INFO, settings)).isEqualTo("5");
   }
 }

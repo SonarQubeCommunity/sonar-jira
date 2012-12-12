@@ -54,5 +54,10 @@ public final class WorkflowBuilder implements ServerExtension {
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.USERNAME_PROPERTY));
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.PASSWORD_PROPERTY));
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
+    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_INFO_PRIORITY_ID));
+    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_MINOR_PRIORITY_ID));
+    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_MAJOR_PRIORITY_ID));
+    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_CRITICAL_PRIORITY_ID));
+    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_BLOCKER_PRIORITY_ID));
   }
 }

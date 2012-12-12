@@ -37,8 +37,7 @@ import org.sonar.plugins.jira.JiraConstants;
 import java.rmi.RemoteException;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -65,28 +64,28 @@ public class JiraSensorTest {
 
   @Test
   public void testToString() throws Exception {
-    assertThat(sensor.toString(), is("JIRA issues sensor"));
+    assertThat(sensor.toString()).isEqualTo("JIRA issues sensor");
   }
 
   @Test
   public void testPresenceOfProperties() throws Exception {
-    assertThat(sensor.missingMandatoryParameters(), is(false));
+    assertThat(sensor.missingMandatoryParameters()).isEqualTo(false);
 
     settings.removeProperty(JiraConstants.PASSWORD_PROPERTY);
     sensor = new JiraSensor(settings);
-    assertThat(sensor.missingMandatoryParameters(), is(true));
+    assertThat(sensor.missingMandatoryParameters()).isEqualTo(true);
 
     settings.removeProperty(JiraConstants.USERNAME_PROPERTY);
     sensor = new JiraSensor(settings);
-    assertThat(sensor.missingMandatoryParameters(), is(true));
+    assertThat(sensor.missingMandatoryParameters()).isEqualTo(true);
 
     settings.removeProperty(JiraConstants.FILTER_PROPERTY);
     sensor = new JiraSensor(settings);
-    assertThat(sensor.missingMandatoryParameters(), is(true));
+    assertThat(sensor.missingMandatoryParameters()).isEqualTo(true);
 
     settings.removeProperty(JiraConstants.SERVER_URL_PROPERTY);
     sensor = new JiraSensor(settings);
-    assertThat(sensor.missingMandatoryParameters(), is(true));
+    assertThat(sensor.missingMandatoryParameters()).isEqualTo(true);
   }
 
   @Test
@@ -94,12 +93,12 @@ public class JiraSensorTest {
     Project project = mock(Project.class);
     when(project.isRoot()).thenReturn(true).thenReturn(false);
 
-    assertThat(sensor.shouldExecuteOnProject(project), is(true));
+    assertThat(sensor.shouldExecuteOnProject(project)).isEqualTo(true);
   }
 
   @Test
   public void shouldNotExecuteOnNonRootProject() throws Exception {
-    assertThat(sensor.shouldExecuteOnProject(mock(Project.class)), is(false));
+    assertThat(sensor.shouldExecuteOnProject(mock(Project.class))).isEqualTo(false);
   }
 
   @Test
@@ -110,7 +109,7 @@ public class JiraSensorTest {
     settings.removeProperty(JiraConstants.SERVER_URL_PROPERTY);
     sensor = new JiraSensor(settings);
 
-    assertThat(sensor.shouldExecuteOnProject(project), is(false));
+    assertThat(sensor.shouldExecuteOnProject(project)).isEqualTo(false);
   }
 
   @Test
@@ -134,8 +133,8 @@ public class JiraSensorTest {
     when(jiraSoapService.getPriorities("token")).thenReturn(new RemotePriority[] {priority1});
 
     Map<String, String> foundPriorities = sensor.collectPriorities(jiraSoapService, "token");
-    assertThat(foundPriorities.size(), is(1));
-    assertThat(foundPriorities.get("1"), is("Minor"));
+    assertThat(foundPriorities.size()).isEqualTo(1);
+    assertThat(foundPriorities.get("1")).isEqualTo("Minor");
   }
 
   @Test
@@ -152,9 +151,9 @@ public class JiraSensorTest {
     when(jiraSoapService.getIssuesFromFilter("token", "1")).thenReturn(new RemoteIssue[] {issue1, issue2, issue3});
 
     Map<String, Integer> foundIssues = sensor.collectIssuesByPriority(jiraSoapService, "token", filter);
-    assertThat(foundIssues.size(), is(2));
-    assertThat(foundIssues.get("critical"), is(2));
-    assertThat(foundIssues.get("minor"), is(1));
+    assertThat(foundIssues.size()).isEqualTo(2);
+    assertThat(foundIssues.get("critical")).isEqualTo(2);
+    assertThat(foundIssues.get("minor")).isEqualTo(1);
   }
 
   @Test
@@ -167,7 +166,7 @@ public class JiraSensorTest {
     when(jiraSoapService.getFavouriteFilters("token")).thenReturn(new RemoteFilter[] {filter1, myFilter});
 
     RemoteFilter foundFilter = sensor.findJiraFilter(jiraSoapService, "token");
-    assertThat(foundFilter, is(myFilter));
+    assertThat(foundFilter).isEqualTo(myFilter);
   }
 
   @Test
@@ -179,7 +178,7 @@ public class JiraSensorTest {
     when(jiraSoapService.getFavouriteFilters("token")).thenThrow(RemoteException.class);
 
     RemoteFilter foundFilter = sensor.findJiraFilter(jiraSoapService, "token");
-    assertThat(foundFilter, is(myFilter));
+    assertThat(foundFilter).isEqualTo(myFilter);
   }
 
   @Test

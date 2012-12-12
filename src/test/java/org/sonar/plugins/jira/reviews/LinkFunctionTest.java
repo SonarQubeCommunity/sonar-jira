@@ -34,8 +34,7 @@ import org.sonar.plugins.jira.JiraConstants;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -109,7 +108,7 @@ public class LinkFunctionTest {
     settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
 
     String commentText = action.generateCommentText(remoteIssue, workflowContext, params);
-    assertThat(commentText, is("Hello world\n\nReview linked to JIRA issue: http://my.jira.server/browse/FOO-15"));
+    assertThat(commentText).isEqualTo("Hello world\n\nReview linked to JIRA issue: http://my.jira.server/browse/FOO-15");
   }
 
 }

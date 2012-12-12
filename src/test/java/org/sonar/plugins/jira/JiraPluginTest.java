@@ -22,12 +22,11 @@ package org.sonar.plugins.jira;
 
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 
 public class JiraPluginTest {
   @Test
   public void testGetExtensions() throws Exception {
-    assertThat(new JiraPlugin().getExtensions().size(), is(6));
+    assertThat(new JiraPlugin().getExtensions().size()).isEqualTo(6);
   }
 }
