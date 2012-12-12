@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>13</version>
+    <version>15</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -34,7 +34,7 @@
     </developer>
     <developer>
       <id>cedric.munger</id>
-      <name>Cédric Munger</name>
+      <name>CÃ©dric Munger</name>
     </developer>
     <developer>
       <id>godin</id>
