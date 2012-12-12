@@ -34,7 +34,7 @@
     </developer>
     <developer>
       <id>cedric.munger</id>
-      <name>CÃ©dric Munger</name>
+      <name>Cédric Munger</name>
     </developer>
     <developer>
       <id>godin</id>
@@ -47,9 +47,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/sonar-plugins/trunk/jira</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-plugins/trunk/jira</developerConnection>
-    <url>http://svn.sonar-plugins.codehaus.org</url>
+    <connection>scm:git:git@github.com:SonarSource/sonar-jira.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonar-jira.git</developerConnection>
+    <url>https://github.com/SonarSource/sonar-jira</url>
   </scm>
   <issueManagement>
     <system>JIRA</system>
