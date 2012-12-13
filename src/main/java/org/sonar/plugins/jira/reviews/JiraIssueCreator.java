@@ -21,14 +21,17 @@ package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
+import com.atlassian.jira.rpc.soap.client.RemoteCustomFieldValue;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
+import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.Properties;
 import org.sonar.api.Property;
+import org.sonar.api.PropertyField;
 import org.sonar.api.PropertyType;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
@@ -41,6 +44,8 @@ import org.sonar.plugins.jira.soap.JiraSoapSession;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * SOAP client class that is used for creating issues on a JIRA server
@@ -106,7 +111,26 @@ import java.rmi.RemoteException;
     global = true,
     project = true,
     type = PropertyType.INTEGER
-  )
+  ),
+  @Property(
+    key = JiraConstants.JIRA_CUSTOM_FIELDS_KEY,
+    name = "Custom JIRA fields to be set on created issues",
+    description = "Custom JIRA fields to be set on newly created issues",
+    project = true,
+    global = true,
+    fields = {
+      @PropertyField(
+        key = JiraConstants.JIRA_CUSTOM_FIELD_ID_KEY,
+        name = "Custom field id",
+        description = "Internal JIRA ID of the custom field.",
+        type = PropertyType.STRING,
+        indicativeSize = 20),
+      @PropertyField(
+        key = JiraConstants.JIRA_CUSTOM_FIELD_VALUES_KEY,
+        name = "Values (comma separated)",
+        description = "Value (or comma-separated values) to set in this custom field",
+        type = PropertyType.STRING,
+        indicativeSize = 200)}),
 })
 public class JiraIssueCreator implements ServerExtension {
 
@@ -172,6 +196,10 @@ public class JiraIssueCreator implements ServerExtension {
       throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ") because of invalid credentials for user " + userName, e);
     } catch (RemotePermissionException e) {
       throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ") because user " + userName + " does not have enough rights.", e);
+    } catch (RemoteValidationException e) {
+      // Unfortunately the detailed cause of the error is not in fault details (ie stack) but only in fault string
+      String message = StringUtils.removeStart(e.getFaultString(), "com.atlassian.jira.rpc.exception.RemoteValidationException:").trim();
+      throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + "): " + message, e);
     } catch (RemoteException e) {
       throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
     }
@@ -184,6 +212,24 @@ public class JiraIssueCreator implements ServerExtension {
     issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
     issue.setSummary(generateIssueSummary(review));
     issue.setDescription(generateIssueDescription(review, settings, commentText));
+    // Custom fields
+    List<RemoteCustomFieldValue> customFields = new LinkedList<RemoteCustomFieldValue>();
+    String patternConf = StringUtils.defaultIfBlank(settings.getString(JiraConstants.JIRA_CUSTOM_FIELDS_KEY), "");
+    for (String id : StringUtils.split(patternConf, ',')) {
+      String propPrefix = JiraConstants.JIRA_CUSTOM_FIELDS_KEY + "." + id + ".";
+      String customFieldId = settings.getString(propPrefix + JiraConstants.JIRA_CUSTOM_FIELD_ID_KEY);
+      String valuesStr = settings.getString(propPrefix + JiraConstants.JIRA_CUSTOM_FIELD_VALUES_KEY);
+      if (StringUtils.isNotBlank(valuesStr)) {
+        String[] values = valuesStr.split(",");
+        RemoteCustomFieldValue rcfv = new RemoteCustomFieldValue();
+        rcfv.setCustomfieldId(customFieldId);
+        rcfv.setValues(values);
+        customFields.add(rcfv);
+      }
+    }
+    if (customFields.size() > 0) {
+      issue.setCustomFieldValues(customFields.toArray(new RemoteCustomFieldValue[customFields.size()]));
+    }
     return issue;
   }
 
