@@ -23,6 +23,7 @@ import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
+import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,6 +173,10 @@ public class JiraIssueCreator implements ServerExtension {
       throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ") because of invalid credentials for user " + userName, e);
     } catch (RemotePermissionException e) {
       throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ") because user " + userName + " does not have enough rights.", e);
+    } catch (RemoteValidationException e) {
+      // Unfortunately the detailed cause of the error is not in fault details (ie stack) but only in fault string
+      String message = StringUtils.removeStart(e.getFaultString(), "com.atlassian.jira.rpc.exception.RemoteValidationException:").trim();
+      throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + "): " + message, e);
     } catch (RemoteException e) {
       throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
     }

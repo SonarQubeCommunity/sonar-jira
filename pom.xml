@@ -44,6 +44,10 @@
       <id>fabemn</id>
       <name>Fabrice Bellingard</name>
     </developer>
+    <developer>
+      <id>henryju</id>
+      <name>Julien Henry</name>
+    </developer>
   </developers>
 
   <scm>
