@@ -48,4 +48,7 @@ public final class JiraConstants {
   public static final String JIRA_BLOCKER_PRIORITY_ID = "sonar.jira.blocker.priority.id";
 
   public static final String JIRA_ISSUE_TYPE_ID = "sonar.jira.issue.type.id";
+
+  public static final String JIRA_ISSUE_COMPONENT_ID = "sonar.jira.issue.component.id";
+  public static final String JIRA_ISSUE_COMPONENT_ID_BLANK = "<none>";
 }

@@ -21,6 +21,7 @@ package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
+import com.atlassian.jira.rpc.soap.client.RemoteComponent;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
 import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
@@ -67,7 +68,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_INFO_PRIORITY_ID,
     defaultValue = "5",
     name = "JIRA priority id for INFO",
-    description = "JIRA priority id used to create issues for Sonar violation with severity INFO. Default is 5 (Trivial).",
+    description = "JIRA priority id used to create issues for Sonar violations with severity INFO. Default is 5 (Trivial).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -76,7 +77,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_MINOR_PRIORITY_ID,
     defaultValue = "4",
     name = "JIRA priority id for MINOR",
-    description = "JIRA priority id used to create issues for Sonar violation with severity MINOR. Default is 4 (Minor).",
+    description = "JIRA priority id used to create issues for Sonar violations with severity MINOR. Default is 4 (Minor).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -85,7 +86,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_MAJOR_PRIORITY_ID,
     defaultValue = "3",
     name = "JIRA priority id for MAJOR",
-    description = "JIRA priority id used to create issues for Sonar violation with severity MAJOR. Default is 3 (Major).",
+    description = "JIRA priority id used to create issues for Sonar violations with severity MAJOR. Default is 3 (Major).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -94,7 +95,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_CRITICAL_PRIORITY_ID,
     defaultValue = "2",
     name = "JIRA priority id for CRITICAL",
-    description = "JIRA priority id used to create issues for Sonar violation with severity CRITICAL. Default is 2 (Critical).",
+    description = "JIRA priority id used to create issues for Sonar violations with severity CRITICAL. Default is 2 (Critical).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -103,7 +104,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_BLOCKER_PRIORITY_ID,
     defaultValue = "1",
     name = "JIRA priority id for BLOCKER",
-    description = "JIRA priority id used to create issues for Sonar violation with severity BLOCKER. Default is 1 (Blocker).",
+    description = "JIRA priority id used to create issues for Sonar violations with severity BLOCKER. Default is 1 (Blocker).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -112,8 +113,17 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_ISSUE_TYPE_ID,
     defaultValue = "3",
     name = "Id of JIRA issue type",
-    description = "JIRA issue type id used to create issues for Sonar violation. Default is 3 (= Task in a default JIRA installation).",
+    description = "JIRA issue type id used to create issues for Sonar violations. Default is 3 (= Task in a default JIRA installation).",
     global = true,
+    project = true,
+    type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_ISSUE_COMPONENT_ID,
+    defaultValue = JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK,
+    name = "Id of JIRA component",
+    description = "JIRA component id used to create issues for Sonar violations. By default no component is set.",
+    global = false,
     project = true,
     type = PropertyType.INTEGER
   )
@@ -197,6 +207,12 @@ public class JiraIssueCreator implements ServerExtension {
     issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
     issue.setSummary(generateIssueSummary(review));
     issue.setDescription(generateIssueDescription(review, settings, commentText));
+    String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
+    if (!JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK.equals(componentId)) {
+      RemoteComponent rc = new RemoteComponent();
+      rc.setId(componentId);
+      issue.setComponents(new RemoteComponent[] {rc});
+    }
     return issue;
   }
 

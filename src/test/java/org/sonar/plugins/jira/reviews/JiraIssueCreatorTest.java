@@ -21,6 +21,7 @@ package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.JiraSoapService;
 import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
+import com.atlassian.jira.rpc.soap.client.RemoteComponent;
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
 import org.junit.Before;
@@ -162,7 +163,24 @@ public class JiraIssueCreatorTest {
   }
 
   @Test
-  public void shouldCreateIssueWithTaskType() throws Exception {
+  public void shouldInitRemoteIssue() throws Exception {
+    // Given that
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("3");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
+    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+
+    // Verify
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
+  }
+
+  @Test
+  public void shouldInitRemoteIssueWithTaskType() throws Exception {
     // Given that
     settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, "4");
     RemoteIssue expectedIssue = new RemoteIssue();
@@ -180,8 +198,9 @@ public class JiraIssueCreatorTest {
   }
 
   @Test
-  public void shouldInitRemoteIssue() throws Exception {
+  public void shouldInitRemoteIssueWithComponent() throws Exception {
     // Given that
+    settings.setProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, "123");
     RemoteIssue expectedIssue = new RemoteIssue();
     expectedIssue.setProject("TEST");
     expectedIssue.setType("3");
@@ -189,6 +208,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
     expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
       "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+    expectedIssue.setComponents(new RemoteComponent[] {new RemoteComponent("123", null)});
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
