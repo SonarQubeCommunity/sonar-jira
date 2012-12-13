@@ -162,20 +162,38 @@ public class JiraIssueCreatorTest {
   }
 
   @Test
-  public void shouldInitRemoteIssue() throws Exception {
+  public void shouldCreateIssueWithTaskType() throws Exception {
     // Given that
-    RemoteIssue issue = new RemoteIssue();
-    issue.setProject("TEST");
-    issue.setType("3");
-    issue.setPriority("4");
-    issue.setSummary("Sonar Review #456 - Wrong identation");
-    issue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+    settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, "4");
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("4");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
+    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
       "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
 
-    assertThat(returnedIssue).isEqualTo(issue);
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
+  }
+
+  @Test
+  public void shouldInitRemoteIssue() throws Exception {
+    // Given that
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("3");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
+    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+
+    // Verify
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
   }
 
   @Test

@@ -107,13 +107,21 @@ import java.rmi.RemoteException;
     global = true,
     project = true,
     type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_ISSUE_TYPE_ID,
+    defaultValue = "3",
+    name = "Id of JIRA issue type",
+    description = "JIRA issue type id used to create issues for Sonar violation. Default is 3 (= Task in a default JIRA installation).",
+    global = true,
+    project = true,
+    type = PropertyType.INTEGER
   )
 })
 public class JiraIssueCreator implements ServerExtension {
 
   private static final String QUOTE = "\n{quote}\n";
   private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
-  private static final String TASK_ISSUE_TYPE = "3";
 
   public JiraIssueCreator() {
   }
@@ -185,7 +193,7 @@ public class JiraIssueCreator implements ServerExtension {
   protected RemoteIssue initRemoteIssue(Review review, Settings settings, String commentText) {
     RemoteIssue issue = new RemoteIssue();
     issue.setProject(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
-    issue.setType(TASK_ISSUE_TYPE);
+    issue.setType(settings.getString(JiraConstants.JIRA_ISSUE_TYPE_ID));
     issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
     issue.setSummary(generateIssueSummary(review));
     issue.setDescription(generateIssueDescription(review, settings, commentText));

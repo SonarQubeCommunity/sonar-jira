@@ -43,7 +43,7 @@ public class WorkflowBuilderTest {
     verify(workflow, times(1)).addCommand("link-to-jira");
     verify(workflow, times(1)).setScreen(anyString(), any(Screen.class));
     verify(workflow, times(1)).addFunction("link-to-jira", function);
-    verify(workflow, times(12)).addCondition(anyString(), any(Condition.class));
+    verify(workflow, times(13)).addCondition(anyString(), any(Condition.class));
   }
 
 }
