@@ -58,16 +58,26 @@ import java.util.Map;
 public class JiraSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(JiraSensor.class);
 
-  private String serverUrl;
-  private String username;
-  private String password;
-  private String filterName;
+  private final Settings settings;
 
   public JiraSensor(Settings settings) {
-    serverUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
-    username = settings.getString(JiraConstants.USERNAME_PROPERTY);
-    password = settings.getString(JiraConstants.PASSWORD_PROPERTY);
-    filterName = settings.getString(JiraConstants.FILTER_PROPERTY);
+    this.settings = settings;
+  }
+
+  private String getServerUrl() {
+    return settings.getString(JiraConstants.SERVER_URL_PROPERTY);
+  }
+
+  private String getUsername() {
+    return settings.getString(JiraConstants.USERNAME_PROPERTY);
+  }
+
+  private String getPassword() {
+    return settings.getString(JiraConstants.PASSWORD_PROPERTY);
+  }
+
+  private String getFilterName() {
+    return settings.getString(JiraConstants.FILTER_PROPERTY);
   }
 
   public boolean shouldExecuteOnProject(Project project) {
@@ -79,8 +89,8 @@ public class JiraSensor implements Sensor {
 
   public void analyse(Project project, SensorContext context) {
     try {
-      JiraSoapSession session = new JiraSoapSession(new URL(serverUrl + "/rpc/soap/jirasoapservice-v2"));
-      session.connect(username, password);
+      JiraSoapSession session = new JiraSoapSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
+      session.connect(getUsername(), getPassword());
 
       JiraSoapService service = session.getJiraSoapService();
       String authToken = session.getAuthenticationToken();
@@ -91,7 +101,7 @@ public class JiraSensor implements Sensor {
     } catch (RemoteException e) {
       LOG.error("Error accessing Jira web service, please verify the parameters", e);
     } catch (MalformedURLException e) {
-      LOG.error("The specified JIRA URL is not valid: " + serverUrl, e);
+      LOG.error("The specified JIRA URL is not valid: " + getServerUrl(), e);
     }
   }
 
@@ -107,7 +117,7 @@ public class JiraSensor implements Sensor {
       distribution.add(priorities.get(entry.getKey()), entry.getValue());
     }
 
-    String url = serverUrl + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
+    String url = getServerUrl() + "/secure/IssueNavigator.jspa?mode=hide&requestId=" + filter.getId();
     saveMeasures(context, url, total, distribution.buildData());
   }
 
@@ -143,23 +153,23 @@ public class JiraSensor implements Sensor {
       filters = service.getSavedFilters(authToken);
     }
     for (RemoteFilter f : filters) {
-      if (filterName.equals(f.getName())) {
+      if (getFilterName().equals(f.getName())) {
         filter = f;
         continue;
       }
     }
 
     if (filter == null) {
-      throw new IllegalStateException("Unable to find filter '" + filterName + "' in JIRA");
+      throw new IllegalStateException("Unable to find filter '" + getFilterName() + "' in JIRA");
     }
     return filter;
   }
 
   protected boolean missingMandatoryParameters() {
-    return StringUtils.isEmpty(serverUrl) ||
-      StringUtils.isEmpty(filterName) ||
-      StringUtils.isEmpty(username) ||
-      StringUtils.isEmpty(password);
+    return StringUtils.isEmpty(getServerUrl()) ||
+      StringUtils.isEmpty(getFilterName()) ||
+      StringUtils.isEmpty(getUsername()) ||
+      StringUtils.isEmpty(getPassword());
   }
 
   protected void saveMeasures(SensorContext context, String issueUrl, double totalPrioritiesCount, String priorityDistribution) {

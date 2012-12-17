@@ -136,7 +136,6 @@ public class JiraIssueCreator implements ServerExtension {
   public JiraIssueCreator() {
   }
 
-  @SuppressWarnings("rawtypes")
   public RemoteIssue createIssue(Review review, Settings settings, String commentText) throws RemoteException {
     JiraSoapSession soapSession = createSoapSession(settings);
 
@@ -243,20 +242,27 @@ public class JiraIssueCreator implements ServerExtension {
   }
 
   protected String sonarSeverityToJiraPriorityId(RulePriority reviewSeverity, Settings settings) {
+    final String priorityId;
     switch (reviewSeverity) {
       case INFO:
-        return settings.getString(JiraConstants.JIRA_INFO_PRIORITY_ID);
+        priorityId = settings.getString(JiraConstants.JIRA_INFO_PRIORITY_ID);
+        break;
       case MINOR:
-        return settings.getString(JiraConstants.JIRA_MINOR_PRIORITY_ID);
+        priorityId = settings.getString(JiraConstants.JIRA_MINOR_PRIORITY_ID);
+        break;
       case MAJOR:
-        return settings.getString(JiraConstants.JIRA_MAJOR_PRIORITY_ID);
+        priorityId = settings.getString(JiraConstants.JIRA_MAJOR_PRIORITY_ID);
+        break;
       case CRITICAL:
-        return settings.getString(JiraConstants.JIRA_CRITICAL_PRIORITY_ID);
+        priorityId = settings.getString(JiraConstants.JIRA_CRITICAL_PRIORITY_ID);
+        break;
       case BLOCKER:
-        return settings.getString(JiraConstants.JIRA_BLOCKER_PRIORITY_ID);
+        priorityId = settings.getString(JiraConstants.JIRA_BLOCKER_PRIORITY_ID);
+        break;
       default:
         throw new SonarException("Unable to convert review severity to JIRA priority: " + reviewSeverity);
     }
+    return priorityId;
   }
 
 }

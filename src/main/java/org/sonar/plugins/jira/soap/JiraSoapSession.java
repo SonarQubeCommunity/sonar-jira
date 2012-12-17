@@ -46,12 +46,8 @@ public class JiraSoapSession {
     this.webServiceUrl = url;
     jiraSoapServiceLocator = new JiraSoapServiceServiceLocator();
     try {
-      if (url == null) {
-        jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2();
-      } else {
-        jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2(url);
-        LOG.debug("SOAP Session service endpoint at " + url.toExternalForm());
-      }
+      jiraSoapService = jiraSoapServiceLocator.getJirasoapserviceV2(url);
+      LOG.debug("SOAP Session service endpoint at " + url.toExternalForm());
     } catch (ServiceException e) {
       throw new IllegalStateException("ServiceException during JiraSoapService contruction", e);
     }
