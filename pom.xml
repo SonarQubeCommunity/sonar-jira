@@ -51,9 +51,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:SonarSource/sonar-jira.git</connection>
-    <developerConnection>scm:git:git@github.com:SonarSource/sonar-jira.git</developerConnection>
-    <url>https://github.com/SonarSource/sonar-jira</url>
+    <connection>scm:git:git@github.com:SonarCommunity/sonar-jira.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarCommunity/sonar-jira.git</developerConnection>
+    <url>https://github.com/SonarCommunity/sonar-jira</url>
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
