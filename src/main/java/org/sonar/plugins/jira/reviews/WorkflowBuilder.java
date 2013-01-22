@@ -50,7 +50,6 @@ public final class WorkflowBuilder implements ServerExtension {
     workflow.addCondition(LINK_TO_JIRA_ID, statuses("IDLE", "OPEN", "REOPENED"));
     // - on the project
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.SERVER_URL_PROPERTY));
-    workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.SOAP_BASE_URL_PROPERTY));
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.USERNAME_PROPERTY));
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.PASSWORD_PROPERTY));
     workflow.addCondition(LINK_TO_JIRA_ID, hasProjectProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));

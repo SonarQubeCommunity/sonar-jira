@@ -30,14 +30,13 @@ public final class JiraConstants {
 
   public static final String SERVER_URL_PROPERTY = "sonar.jira.url";
 
-  public static final String SOAP_BASE_URL_PROPERTY = "sonar.jira.soap.url";
-  public static final String SOAP_BASE_URL_DEF_VALUE = "/rpc/soap/jirasoapservice-v2";
-
   public static final String USERNAME_PROPERTY = "sonar.jira.login.secured";
 
   public static final String PASSWORD_PROPERTY = "sonar.jira.password.secured";
 
   public static final String JIRA_PROJECT_KEY_PROPERTY = "sonar.jira.project.key";
+  public static final String JIRA_ISSUE_REPORTER_PROPERTY = "sonar.jira.issue.reporter";
+  public static final String JIRA_ISSUE_ASSIGNEE_PROPERTY = "sonar.jira.issue.assignee";
 
   public static final String FILTER_PROPERTY = "sonar.jira.url.param";
 

@@ -19,12 +19,13 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.JiraSoapService;
-import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
-import com.atlassian.jira.rpc.soap.client.RemoteComponent;
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
-import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
+import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,24 +39,20 @@ import org.sonar.api.rules.RulePriority;
 import org.sonar.api.utils.SonarException;
 import org.sonar.api.workflow.Review;
 import org.sonar.plugins.jira.JiraConstants;
-import org.sonar.plugins.jira.soap.JiraSoapSession;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.rmi.RemoteException;
+import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.RestClientException;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
+import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
+import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
+import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
+import com.atlassian.util.concurrent.Promise;
 
 /**
  * SOAP client class that is used for creating issues on a JIRA server
  */
 @Properties({
-  @Property(
-    key = JiraConstants.SOAP_BASE_URL_PROPERTY,
-    defaultValue = JiraConstants.SOAP_BASE_URL_DEF_VALUE,
-    name = "SOAP base URL",
-    description = "Base URL for the SOAP API of the JIRA server",
-    global = true,
-    project = true
-  ),
   @Property(
     key = JiraConstants.JIRA_PROJECT_KEY_PROPERTY,
     defaultValue = "",
@@ -121,148 +118,186 @@ import java.rmi.RemoteException;
   @Property(
     key = JiraConstants.JIRA_ISSUE_COMPONENT_ID,
     defaultValue = JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK,
-    name = "Id of JIRA component",
-    description = "JIRA component id used to create issues for Sonar violations. By default no component is set.",
+    name = "Name of JIRA component",
+    description = "JIRA component name used to create issues for Sonar violations. By default no component is set.",
     global = false,
     project = true,
-    type = PropertyType.INTEGER
+    type = PropertyType.STRING
   )
 })
 public class JiraIssueCreator implements ServerExtension {
 
-  private static final String QUOTE = "\n{quote}\n";
-  private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
+	private static final String QUOTE = "\n{quote}\n";
+	private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
 
-  public JiraIssueCreator() {
-  }
+	public JiraIssueCreator() {
+	}
 
-  public RemoteIssue createIssue(Review review, Settings settings, String commentText) throws RemoteException {
-    JiraSoapSession soapSession = createSoapSession(settings);
+	public Issue createIssue(Review review, Settings settings, Map<String, String> params) /*throws ExecutionException*/ {
+		LOG.info("Create new issue in JIRA, review: '{}', settings.properties: '{}'", review, settings.getProperties());
+		
+		JiraRestClient jrc = createRestClient(settings);
 
-    return doCreateIssue(review, soapSession, settings, commentText);
-  }
+		try {
+			return doCreateIssue(review, jrc, settings, params);
+		}
+		finally {
+			LOG.info("Remote call finished.");
+		}
+	}
 
-  protected JiraSoapSession createSoapSession(Settings settings) {
-    String jiraUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
-    String baseUrl = settings.getString(JiraConstants.SOAP_BASE_URL_PROPERTY);
-    String completeUrl = jiraUrl + baseUrl;
+	protected JiraRestClient createRestClient(Settings settings) {
+		String jiraUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
+		String userName = settings.getString(JiraConstants.USERNAME_PROPERTY);
+		String password = settings.getString(JiraConstants.PASSWORD_PROPERTY);
 
-    // get handle to the JIRA SOAP Service from a client point of view
-    JiraSoapSession soapSession = null;
-    try {
-      soapSession = new JiraSoapSession(new URL(completeUrl));
-    } catch (MalformedURLException e) {
-      LOG.error("The JIRA server URL is not a valid one: " + completeUrl, e);
-      throw new IllegalStateException("The JIRA server URL is not a valid one: " + completeUrl, e);
-    }
-    return soapSession;
-  }
+		LOG.info("Use JIRA server url: {}, userName: {}", jiraUrl, userName);
+		LOG.debug("Use this password: {}", password);
 
-  protected RemoteIssue doCreateIssue(Review review, JiraSoapSession soapSession, Settings settings, String commentText) {
-    // Connect to JIRA
-    String jiraUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
-    String userName = settings.getString(JiraConstants.USERNAME_PROPERTY);
-    String password = settings.getString(JiraConstants.PASSWORD_PROPERTY);
-    try {
-      soapSession.connect(userName, password);
-    } catch (RemoteException e) {
-      throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ").", e);
-    }
+		// get handle to the JIRA Rest Service from a client point of view
+		JiraRestClient jrc = null;
+		try {
+			AsynchronousJiraRestClientFactory f = new AsynchronousJiraRestClientFactory();
+			jrc = f.createWithBasicHttpAuthentication(new URI(jiraUrl), userName, password);
+		} 
+		catch (URISyntaxException e) {
+			LOG.error("The JIRA server URL is not a valid one: " + jiraUrl, e);
+//			throw new ExecutionException("The JIRA server URL is not a valid one: " + jiraUrl, e);
+			throw new IllegalStateException("The JIRA server URL is not a valid one: " + jiraUrl, e);
+		}
+		return jrc;
+	}
 
-    // The JIRA SOAP Service and authentication token are used to make authentication calls
-    JiraSoapService jiraSoapService = soapSession.getJiraSoapService();
-    String authToken = soapSession.getAuthenticationToken();
+	protected Issue doCreateIssue(Review review, JiraRestClient jrc, Settings settings, Map<String, String> params) {
+		// Connect to JIRA
+		String jiraUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
+		String user = settings.getString(JiraConstants.USERNAME_PROPERTY);
 
-    // And create the issue
-    RemoteIssue issue = initRemoteIssue(review, settings, commentText);
-    RemoteIssue returnedIssue = sendRequest(jiraSoapService, authToken, issue, jiraUrl, userName);
+		// And create the issue
+		IssueInput issue = initRemoteIssue(review, settings, params);
+		LOG.info("Prepared issue to create: {}", issue);
+		Issue returnedIssue = null;
+		try {
+			Promise<BasicIssue> promisedReturnedIssue = jrc.getIssueClient().createIssue(issue);
+			//get the newly created issue
+			returnedIssue = jrc.getIssueClient().getIssue(promisedReturnedIssue.get().getKey()).get();
+			LOG.info("Returned issue #: {}", returnedIssue.getKey());
+		} 
+		catch (RestClientException e) {
+			LOG.warn("The reason was: {}", e.getMessage());
+			throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + "). Check the RestClientException cause.", e);
+		}
+		catch (InterruptedException e) {
+			throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
+		} 
+		catch (ExecutionException e) {
+			LOG.warn("Create issue failed.");
+			if (e.getCause() != null) {
+				if (e.getCause() instanceof RestClientException) {
+					RestClientException ex = (RestClientException) e.getCause();
+					//				LOG.warn("The reason was: {}", ex.getMessage());
+					if (ex != null && ex.getStatusCode().isPresent()) {
+						switch (ex.getStatusCode().get()) {
+						case 401:	// ACCESS DENIED
+							throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ") because of invalid credentials for user " + user, ex);
+						default:
+							break;
+						}
+					}
+					throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + "). Check the RestClientException cause.", ex);
+				}
+				else if (e.getCause() instanceof SocketException) {
+					throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ")", e.getCause());
+				}
+			}
+			throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
+		}
+		return returnedIssue;
+	}
 
-    String issueKey = returnedIssue.getKey();
-    LOG.debug("Successfully created issue {}", issueKey);
 
-    return returnedIssue;
-  }
+	protected IssueInput initRemoteIssue(Review review, Settings settings, Map<String, String> params) {
+		
+		IssueInputBuilder issueBuilder = new IssueInputBuilder(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY), 
+				Long.valueOf(settings.getString(JiraConstants.JIRA_ISSUE_TYPE_ID)));
 
-  protected RemoteIssue sendRequest(JiraSoapService jiraSoapService, String authToken, RemoteIssue issue, String jiraUrl, String userName) {
-    try {
-      return jiraSoapService.createIssue(authToken, issue);
-    } catch (RemoteAuthenticationException e) {
-      throw new IllegalStateException("Impossible to connect to the JIRA server (" + jiraUrl + ") because of invalid credentials for user " + userName, e);
-    } catch (RemotePermissionException e) {
-      throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ") because user " + userName + " does not have enough rights.", e);
-    } catch (RemoteValidationException e) {
-      // Unfortunately the detailed cause of the error is not in fault details (ie stack) but only in fault string
-      String message = StringUtils.removeStart(e.getFaultString(), "com.atlassian.jira.rpc.exception.RemoteValidationException:").trim();
-      throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + "): " + message, e);
-    } catch (RemoteException e) {
-      throw new IllegalStateException("Impossible to create the issue on the JIRA server (" + jiraUrl + ")", e);
-    }
-  }
+		String commentText = params.get("text");
+		issueBuilder.setDescription(generateIssueDescription(review, settings, commentText));
+		issueBuilder.setSummary(generateIssueSummary(review));
+		issueBuilder.setPriorityId(Long.valueOf( sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings)));
+		
+		String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
+		if (!JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK.equals(componentId)) {
+			LOG.info("Set component Id: {}", componentId);
+			issueBuilder.setComponentsNames(Arrays.asList(componentId));
+		}
+		if ( params.containsKey(JiraConstants.JIRA_ISSUE_REPORTER_PROPERTY)) {
+			LOG.debug("Set the reporter.");
+			issueBuilder.setReporterName(params.get(JiraConstants.JIRA_ISSUE_REPORTER_PROPERTY));
+		}
+		
+		if ( params.containsKey(JiraConstants.JIRA_ISSUE_ASSIGNEE_PROPERTY)) {
+			LOG.debug("Set the assignee.");
+			issueBuilder.setAssigneeName(params.get(JiraConstants.JIRA_ISSUE_ASSIGNEE_PROPERTY));
+		}
+		
 
-  protected RemoteIssue initRemoteIssue(Review review, Settings settings, String commentText) {
-    RemoteIssue issue = new RemoteIssue();
-    issue.setProject(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
-    issue.setType(settings.getString(JiraConstants.JIRA_ISSUE_TYPE_ID));
-    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
-    issue.setSummary(generateIssueSummary(review));
-    issue.setDescription(generateIssueDescription(review, settings, commentText));
-    String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
-    if (!JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK.equals(componentId)) {
-      RemoteComponent rc = new RemoteComponent();
-      rc.setId(componentId);
-      issue.setComponents(new RemoteComponent[] {rc});
-    }
-    return issue;
-  }
+		IssueInput issueInput = issueBuilder.build();
+		LOG.info("Prepared issueInput: {}", issueInput);
+		return issueInput;
+	}
 
-  protected String generateIssueSummary(Review review) {
-    StringBuilder summary = new StringBuilder("Sonar Review #");
-    summary.append(review.getReviewId());
-    summary.append(" - ");
-    summary.append(review.getRuleName());
-    return summary.toString();
-  }
+	protected String generateIssueSummary(Review review) {
+		StringBuilder summary = new StringBuilder("Sonar Review #");
+		summary.append(review.getReviewId());
+		summary.append(" - ");
+		summary.append(review.getRuleName());
+		return summary.toString();
+	}
 
-  protected String generateIssueDescription(Review review, Settings settings, String commentText) {
-    StringBuilder description = new StringBuilder("Violation detail:");
-    description.append(QUOTE);
-    description.append(review.getMessage());
-    description.append(QUOTE);
-    if (StringUtils.isNotBlank(commentText)) {
-      description.append("\nMessage from reviewer:");
-      description.append(QUOTE);
-      description.append(commentText);
-      description.append(QUOTE);
-    }
-    description.append("\n\nCheck it on Sonar: ");
-    description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
-    description.append("/project_reviews/view/");
-    description.append(review.getReviewId());
-    return description.toString();
-  }
+	protected String generateIssueDescription(Review review, Settings settings, String commentText) {
+		StringBuilder description = new StringBuilder("Violation detail:");
+		description.append(QUOTE);
+		description.append(review.getMessage());
+		description.append(QUOTE);
+		if (StringUtils.isNotBlank(commentText)) {
+			description.append("\nMessage from reviewer:");
+			description.append(QUOTE);
+			description.append(commentText);
+			description.append(QUOTE);
+		}
+		description.append("\n\nCheck it on Sonar: ");
+		description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
+		description.append("/project_reviews/view/");
+		description.append(review.getReviewId());
+		return description.toString();
+	}
 
-  protected String sonarSeverityToJiraPriorityId(RulePriority reviewSeverity, Settings settings) {
-    final String priorityId;
-    switch (reviewSeverity) {
-      case INFO:
-        priorityId = settings.getString(JiraConstants.JIRA_INFO_PRIORITY_ID);
-        break;
-      case MINOR:
-        priorityId = settings.getString(JiraConstants.JIRA_MINOR_PRIORITY_ID);
-        break;
-      case MAJOR:
-        priorityId = settings.getString(JiraConstants.JIRA_MAJOR_PRIORITY_ID);
-        break;
-      case CRITICAL:
-        priorityId = settings.getString(JiraConstants.JIRA_CRITICAL_PRIORITY_ID);
-        break;
-      case BLOCKER:
-        priorityId = settings.getString(JiraConstants.JIRA_BLOCKER_PRIORITY_ID);
-        break;
-      default:
-        throw new SonarException("Unable to convert review severity to JIRA priority: " + reviewSeverity);
-    }
-    return priorityId;
-  }
+	protected String sonarSeverityToJiraPriorityId(RulePriority reviewSeverity, Settings settings) {
+		final String priorityId;
+		switch (reviewSeverity) {
+		case INFO:
+			priorityId = settings.getString(JiraConstants.JIRA_INFO_PRIORITY_ID);
+			break;
+		case MINOR:
+			priorityId = settings.getString(JiraConstants.JIRA_MINOR_PRIORITY_ID);
+			break;
+		case MAJOR:
+			priorityId = settings.getString(JiraConstants.JIRA_MAJOR_PRIORITY_ID);
+			break;
+		case CRITICAL:
+			priorityId = settings.getString(JiraConstants.JIRA_CRITICAL_PRIORITY_ID);
+			break;
+		case BLOCKER:
+			priorityId = settings.getString(JiraConstants.JIRA_BLOCKER_PRIORITY_ID);
+			break;
+		default:
+			throw new SonarException("Unable to convert review severity to JIRA priority: " + reviewSeverity);
+		}
+		return priorityId;
+	}
 
 }
