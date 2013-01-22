@@ -19,15 +19,24 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.JiraSoapService;
-import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
-import com.atlassian.jira.rpc.soap.client.RemoteComponent;
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.ConnectException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
@@ -35,193 +44,271 @@ import org.sonar.api.rules.RulePriority;
 import org.sonar.api.workflow.internal.DefaultReview;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.JiraPlugin;
-import org.sonar.plugins.jira.soap.JiraSoapSession;
+import org.sonar.plugins.jira.util.ResourceUtil;
 
-import java.rmi.RemoteException;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.atlassian.jira.rest.client.api.IssueRestClient;
+import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.RestClientException;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
+import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
+import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
+import com.atlassian.jira.rest.client.internal.json.IssueJsonParser;
+import com.atlassian.util.concurrent.Promise;
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 public class JiraIssueCreatorTest {
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-  private JiraIssueCreator jiraIssueCreator;
-  private DefaultReview review;
-  private Settings settings;
+	private static final String DESCRIPTION = "Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+			"{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456";
+	private static final String SUMMARY = "Sonar Review #456 - Wrong identation";
 
-  @Before
-  public void init() throws Exception {
-    review = new DefaultReview();
-    review.setReviewId(456L);
-    review.setMessage("The Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.");
-    review.setSeverity("MINOR");
-    review.setRuleName("Wrong identation");
+	
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	private JiraIssueCreator jiraIssueCreator;
+	private DefaultReview review;
+	private Settings settings;
+	private Map<String, String> params;
 
-    settings = new Settings(new PropertyDefinitions(JiraIssueCreator.class, JiraPlugin.class));
-    settings.setProperty(CoreProperties.SERVER_BASE_URL, "http://my.sonar.com");
-    settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.com");
-    settings.setProperty(JiraConstants.USERNAME_PROPERTY, "foo");
-    settings.setProperty(JiraConstants.PASSWORD_PROPERTY, "bar");
-    settings.setProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "TEST");
+	@Before
+	public void init() throws Exception {
+		review = new DefaultReview();
+		review.setReviewId(456L);
+		review.setMessage("The Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.");
+		review.setSeverity("MINOR");
+		review.setRuleName("Wrong identation");
 
-    jiraIssueCreator = new JiraIssueCreator();
-  }
+		settings = new Settings(new PropertyDefinitions(JiraIssueCreator.class, JiraPlugin.class));
+		settings.setProperty(CoreProperties.SERVER_BASE_URL, "http://my.sonar.com");
+		settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.com");
+		settings.setProperty(JiraConstants.USERNAME_PROPERTY, "foo");
+		settings.setProperty(JiraConstants.PASSWORD_PROPERTY, "bar");
+		settings.setProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "TEST");
+		settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, "3");
 
-  @Test
-  public void shouldCreateSoapSession() throws Exception {
-    JiraSoapSession soapSession = jiraIssueCreator.createSoapSession(settings);
-    assertThat(soapSession.getWebServiceUrl().toString()).isEqualTo("http://my.jira.com/rpc/soap/jirasoapservice-v2");
-  }
+		jiraIssueCreator = new JiraIssueCreator();
 
-  @Test
-  public void shouldFailToCreateSoapSessionWithIncorrectUrl() throws Exception {
-    settings.removeProperty(JiraConstants.SERVER_URL_PROPERTY);
-    settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "my.server");
+		params = Maps.newHashMap();
+		params.put("text", "Hello world!");
 
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("The JIRA server URL is not a valid one: my.server/rpc/soap/jirasoapservice-v2");
+	}
+	  
+	@Test
+	public void shouldFailToCreateSoapSessionWithIncorrectUrl() throws Exception {
+		settings.removeProperty(JiraConstants.SERVER_URL_PROPERTY);
+		settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "httpw:/\\/my..server");
 
-    jiraIssueCreator.createSoapSession(settings);
-  }
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage("The JIRA server URL is not a valid one: httpw:/\\/my..server");
 
-  @Test
-  public void shouldFailToCreateIssueIfCantConnect() throws Exception {
-    // Given that
-    JiraSoapSession soapSession = mock(JiraSoapSession.class);
-    doThrow(RemoteException.class).when(soapSession).connect(anyString(), anyString());
+		jiraIssueCreator.createRestClient(settings);
+	}
 
-    // Verify
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Impossible to connect to the JIRA server");
+	@Test
+	public void shouldFailToCreateIssueIfCantConnect() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "my.jira");
 
-    jiraIssueCreator.doCreateIssue(review, soapSession, settings, null);
-  }
+		JiraRestClient jiraRestClient = mock(JiraRestClient.class);
+		IssueRestClient issueRestClient = mock(IssueRestClient.class);
+		when(jiraRestClient.getIssueClient()).thenReturn(issueRestClient);
 
-  @Test
-  public void shouldFailToCreateIssueIfCantAuthenticate() throws Exception {
-    // Given that
-    JiraSoapService jiraSoapService = mock(JiraSoapService.class);
-    doThrow(RemoteAuthenticationException.class).when(jiraSoapService).createIssue(anyString(), any(RemoteIssue.class));
+		ConnectException ce = mock(ConnectException.class);
+		when(ce.getMessage()).thenReturn(null);
+		
+		ExecutionException ex = new ExecutionException(ce);
+		
+		Promise<BasicIssue> promise = mock(Promise.class); 
 
-    // Verify
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Impossible to connect to the JIRA server (my.jira) because of invalid credentials for user foo");
+		when(issueRestClient.createIssue(Mockito.any(IssueInput.class))).thenReturn(promise);
+		
+		// the promised return value get() operation causes the ExecutionException
+		Mockito.doThrow(ex).when(promise).get();
+		
+		// Verify
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage("Impossible to connect to the JIRA server (my.jira)");
 
-    jiraIssueCreator.sendRequest(jiraSoapService, "", null, "my.jira", "foo");
-  }
+		jiraIssueCreator.doCreateIssue(review, jiraRestClient, settings, params);
+	}
 
-  @Test
-  public void shouldFailToCreateIssueIfNotEnoughRights() throws Exception {
-    // Given that
-    JiraSoapService jiraSoapService = mock(JiraSoapService.class);
-    doThrow(RemotePermissionException.class).when(jiraSoapService).createIssue(anyString(), any(RemoteIssue.class));
+	@Test
+	public void shouldFailToCreateIssueIfCantAuthenticate() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "my.jira");
 
-    // Verify
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Impossible to create the issue on the JIRA server (my.jira) because user foo does not have enough rights.");
+		JiraRestClient jiraRestClient = mock(JiraRestClient.class);
+		IssueRestClient issueRestClient = mock(IssueRestClient.class);
+		when(jiraRestClient.getIssueClient()).thenReturn(issueRestClient);
 
-    jiraIssueCreator.sendRequest(jiraSoapService, "", null, "my.jira", "foo");
-  }
+		RestClientException rce = mock(RestClientException.class);
+		when(rce.getMessage()).thenReturn(null);
+		Optional<Integer> isPresent = Optional.of(Integer.valueOf(401));
+		when(rce.getStatusCode()).thenReturn(isPresent);
+		
+		ExecutionException ex = new ExecutionException(rce);
+		
+		Promise<BasicIssue> promise = mock(Promise.class); 
 
-  @Test
-  public void shouldFailToCreateIssueIfRemoteError() throws Exception {
-    // Given that
-    JiraSoapService jiraSoapService = mock(JiraSoapService.class);
-    doThrow(RemoteException.class).when(jiraSoapService).createIssue(anyString(), any(RemoteIssue.class));
+		when(issueRestClient.createIssue(Mockito.any(IssueInput.class))).thenReturn(promise);
+		
+		// the promised return value get() operation causes the ExecutionException
+		Mockito.doThrow(ex).when(promise).get();
 
-    // Verify
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Impossible to create the issue on the JIRA server (my.jira)");
+		// Verify
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage("Impossible to connect to the JIRA server (my.jira) because of invalid credentials for user foo");
 
-    jiraIssueCreator.sendRequest(jiraSoapService, "", null, "my.jira", "foo");
-  }
+		jiraIssueCreator.doCreateIssue(review, jiraRestClient, settings, params);
+	}
 
-  @Test
-  public void shouldCreateIssue() throws Exception {
-    // Given that
-    RemoteIssue issue = new RemoteIssue();
-    JiraSoapService jiraSoapService = mock(JiraSoapService.class);
-    when(jiraSoapService.createIssue(anyString(), any(RemoteIssue.class))).thenReturn(issue);
+	@Test
+	public void shouldFailToCreateIssueIfNotEnoughRights() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "my.jira");
 
-    JiraSoapSession soapSession = mock(JiraSoapSession.class);
-    when(soapSession.getJiraSoapService()).thenReturn(jiraSoapService);
+		JiraRestClient jiraRestClient = mock(JiraRestClient.class);
+		IssueRestClient issueRestClient = mock(IssueRestClient.class);
+		when(jiraRestClient.getIssueClient()).thenReturn(issueRestClient);
 
-    // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.doCreateIssue(review, soapSession, settings, null);
+		RestClientException rce = mock(RestClientException.class);
+		when(rce.getMessage()).thenReturn(null);
+		Optional<Integer> isPresent = Optional.absent();
+		when(rce.getStatusCode()).thenReturn(isPresent);
+		
+		ExecutionException ex = new ExecutionException(rce);
+		
+		Promise<BasicIssue> promise = mock(Promise.class); 
 
-    verify(soapSession).connect("foo", "bar");
-    verify(soapSession).getJiraSoapService();
-    verify(soapSession).getAuthenticationToken();
+		when(issueRestClient.createIssue(Mockito.any(IssueInput.class))).thenReturn(promise);
+		
+		// the promised return value get() operation causes the ExecutionException
+		Mockito.doThrow(ex).when(promise).get();
+		
+		// Verify
+		thrown.expect(IllegalStateException.class);
+//		thrown.expectMessage("Impossible to create the issue on the JIRA server (my.jira) because user foo does not have enough rights.");
+		thrown.expectMessage("Impossible to create the issue on the JIRA server (my.jira). Check the RestClientException cause.");
 
-    assertThat(returnedIssue).isEqualTo(issue);
-  }
+		jiraIssueCreator.doCreateIssue(review, jiraRestClient, settings, params);
+	}
 
-  @Test
-  public void shouldInitRemoteIssue() throws Exception {
-    // Given that
-    RemoteIssue expectedIssue = new RemoteIssue();
-    expectedIssue.setProject("TEST");
-    expectedIssue.setType("3");
-    expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+	@Test
+	public void shouldFailToCreateIssueIfRemoteError() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "my.jira");
+		
+		JiraRestClient jiraRestClient = mock(JiraRestClient.class);
+		IssueRestClient issueRestClient = mock(IssueRestClient.class);
+		when(jiraRestClient.getIssueClient()).thenReturn(issueRestClient);
 
-    // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+		Mockito.doThrow(RestClientException.class).when(issueRestClient).createIssue(Mockito.any(IssueInput.class));
+		
+		// Verify
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage("Impossible to create the issue on the JIRA server (my.jira)");
 
-    assertThat(returnedIssue).isEqualTo(expectedIssue);
-  }
+		jiraIssueCreator.doCreateIssue(review, jiraRestClient, settings, params);
+	}
 
-  @Test
-  public void shouldInitRemoteIssueWithTaskType() throws Exception {
-    // Given that
-    settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, "4");
-    RemoteIssue expectedIssue = new RemoteIssue();
-    expectedIssue.setProject("TEST");
-    expectedIssue.setType("4");
-    expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+	@Test
+	public void shouldCreateIssue() throws Exception {
+		// Given that
+		JiraRestClient jiraRestClient = mock(JiraRestClient.class);
+		IssueRestClient issueRestClient = mock(IssueRestClient.class);
+		when(jiraRestClient.getIssueClient()).thenReturn(issueRestClient);
+		
+		final Issue expectedIssue = parseIssue("/json/issue/issue-valid.json");
+		Promise<BasicIssue> promise = mock(Promise.class); 
+		when(promise.get()).thenReturn(expectedIssue);
+		when(issueRestClient.createIssue(Mockito.any(IssueInput.class))).thenReturn(promise);
+		Promise<Issue> promise2 = mock(Promise.class); 
+		when(promise2.get()).thenReturn(expectedIssue);
+		when(issueRestClient.getIssue(Mockito.anyString())).thenReturn(promise2);
 
-    // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+		// Verify
+		Issue returnedIssue = jiraIssueCreator.doCreateIssue(review, jiraRestClient, settings, params);
 
-    assertThat(returnedIssue).isEqualTo(expectedIssue);
-  }
+		verify(jiraRestClient, times(2)).getIssueClient();
+		verify(issueRestClient).createIssue(Mockito.any(IssueInput.class));
+		verify(issueRestClient).getIssue(Mockito.anyString());
 
-  @Test
-  public void shouldInitRemoteIssueWithComponent() throws Exception {
-    // Given that
-    settings.setProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, "123");
-    RemoteIssue expectedIssue = new RemoteIssue();
-    expectedIssue.setProject("TEST");
-    expectedIssue.setType("3");
-    expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
-    expectedIssue.setComponents(new RemoteComponent[] {new RemoteComponent("123", null)});
+		assertThat(returnedIssue).isEqualTo(expectedIssue);
+	}
 
-    // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+	@Test
+	public void shouldInitRemoteIssue() throws Exception {
+		// Given that
+		IssueInput expectedIssue = prepareIssueInput("TEST", "3", "4", DESCRIPTION, SUMMARY, null);
 
-    assertThat(returnedIssue).isEqualTo(expectedIssue);
-  }
+		// Verify
+		IssueInput returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, params);
 
-  @Test
-  public void shouldGiveDefaultPriority() throws Exception {
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.BLOCKER, settings)).isEqualTo("1");
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.CRITICAL, settings)).isEqualTo("2");
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MAJOR, settings)).isEqualTo("3");
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MINOR, settings)).isEqualTo("4");
-    assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.INFO, settings)).isEqualTo("5");
-  }
+		assertThat(String.valueOf(returnedIssue)).isEqualTo(String.valueOf(expectedIssue));
+	}
+
+	@Test
+	public void shouldInitRemoteIssueWithTaskType() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, "4");
+
+		String projectKey = "TEST"; 
+		String issueTypeId = "4";
+		String priorityId = "4";
+		IssueInput expectedIssue = prepareIssueInput(projectKey, issueTypeId, priorityId, DESCRIPTION, SUMMARY, null);
+
+		// Verify
+		IssueInput returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, params);
+
+		assertThat(String.valueOf(returnedIssue)).isEqualTo(String.valueOf(expectedIssue));
+	}
+
+	@Test
+	public void shouldInitRemoteIssueWithComponent() throws Exception {
+		// Given that
+		settings.setProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, "123");
+
+		String projectKey = "TEST"; 
+		String issueTypeId = "3";
+		String priorityId = "4";
+		String componentId = "123";
+		IssueInput expectedIssue = prepareIssueInput(projectKey, issueTypeId, priorityId, DESCRIPTION, SUMMARY, componentId);
+
+		// Verify
+		IssueInput returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, params);
+
+		assertThat(String.valueOf(returnedIssue)).isEqualTo(String.valueOf(expectedIssue));
+	}
+
+	@Test
+	public void shouldGiveDefaultPriority() throws Exception {
+		assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.BLOCKER, settings)).isEqualTo("1");
+		assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.CRITICAL, settings)).isEqualTo("2");
+		assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MAJOR, settings)).isEqualTo("3");
+		assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MINOR, settings)).isEqualTo("4");
+		assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.INFO, settings)).isEqualTo("5");
+	}
+
+	private IssueInput prepareIssueInput(String projectKey, String issueTypeId, String priorityId, String description, 
+			String summary, String componentId) {
+
+		IssueInputBuilder issueBuilder = new IssueInputBuilder(projectKey, Long.valueOf(issueTypeId));
+
+		issueBuilder.setDescription(description);
+		issueBuilder.setSummary(summary);
+		issueBuilder.setPriorityId(Long.valueOf(priorityId));
+		if (componentId != null) {
+			issueBuilder.setComponentsNames(Arrays.asList(componentId));
+		}
+
+		return issueBuilder.build();
+	}
+
+	  private Issue parseIssue(final String resourcePath) throws JSONException {
+		  final JSONObject issueJson = ResourceUtil.getJsonObjectFromResource(resourcePath);
+		  final IssueJsonParser parser = new IssueJsonParser();
+		  return parser.parse(issueJson);
+	  }
 }

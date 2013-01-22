@@ -12,3 +12,4 @@ target/
 .project
 .settings
 
+/setenv-maven-3.0.4.cmd
