@@ -31,8 +31,11 @@ import org.junit.rules.ExpectedException;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
+import org.sonar.api.issue.Issue;
+import org.sonar.api.issue.internal.DefaultIssue;
+import org.sonar.api.rule.RuleKey;
+import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RulePriority;
-import org.sonar.api.workflow.internal.DefaultReview;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.JiraPlugin;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
@@ -52,16 +55,20 @@ public class JiraIssueCreatorTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
   private JiraIssueCreator jiraIssueCreator;
-  private DefaultReview review;
+  private Issue sonarIssue;
   private Settings settings;
+  private RuleFinder ruleFinder;
 
   @Before
   public void init() throws Exception {
-    review = new DefaultReview();
-    review.setReviewId(456L);
-    review.setMessage("The Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.");
-    review.setSeverity("MINOR");
-    review.setRuleName("Wrong identation");
+    sonarIssue = new DefaultIssue()
+      .setKey("ABCD")
+      .setMessage("The Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.")
+      .setSeverity("MINOR")
+      .setRuleKey(RuleKey.of("squid", "CycleBetweenPackages"));
+
+    ruleFinder = mock(RuleFinder.class);
+    when(ruleFinder.findByKey(RuleKey.of("squid", "CycleBetweenPackages"))).thenReturn(org.sonar.api.rules.Rule.create().setName("Avoid cycle between java packages"));
 
     settings = new Settings(new PropertyDefinitions(JiraIssueCreator.class, JiraPlugin.class));
     settings.setProperty(CoreProperties.SERVER_BASE_URL, "http://my.sonar.com");
@@ -70,7 +77,7 @@ public class JiraIssueCreatorTest {
     settings.setProperty(JiraConstants.PASSWORD_PROPERTY, "bar");
     settings.setProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "TEST");
 
-    jiraIssueCreator = new JiraIssueCreator();
+    jiraIssueCreator = new JiraIssueCreator(ruleFinder);
   }
 
   @Test
@@ -100,7 +107,7 @@ public class JiraIssueCreatorTest {
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("Impossible to connect to the JIRA server");
 
-    jiraIssueCreator.doCreateIssue(review, soapSession, settings, null);
+    jiraIssueCreator.doCreateIssue(sonarIssue, soapSession, settings);
   }
 
   @Test
@@ -153,7 +160,7 @@ public class JiraIssueCreatorTest {
     when(soapSession.getJiraSoapService()).thenReturn(jiraSoapService);
 
     // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.doCreateIssue(review, soapSession, settings, null);
+    RemoteIssue returnedIssue = jiraIssueCreator.doCreateIssue(sonarIssue, soapSession, settings);
 
     verify(soapSession).connect("foo", "bar");
     verify(soapSession).getJiraSoapService();
@@ -169,13 +176,15 @@ public class JiraIssueCreatorTest {
     expectedIssue.setProject("TEST");
     expectedIssue.setType("3");
     expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+    expectedIssue.setSummary("Sonar Issue #ABCD - Avoid cycle between java packages");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/issue/show/ABCD");
 
     // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
 
+    assertThat(returnedIssue.getSummary()).isEqualTo(expectedIssue.getSummary());
+    assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
     assertThat(returnedIssue).isEqualTo(expectedIssue);
   }
 
@@ -187,13 +196,15 @@ public class JiraIssueCreatorTest {
     expectedIssue.setProject("TEST");
     expectedIssue.setType("4");
     expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+    expectedIssue.setSummary("Sonar Issue #ABCD - Avoid cycle between java packages");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/issue/show/ABCD");
 
     // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
 
+    assertThat(returnedIssue.getSummary()).isEqualTo(expectedIssue.getSummary());
+    assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
     assertThat(returnedIssue).isEqualTo(expectedIssue);
   }
 
@@ -205,13 +216,13 @@ public class JiraIssueCreatorTest {
     expectedIssue.setProject("TEST");
     expectedIssue.setType("3");
     expectedIssue.setPriority("4");
-    expectedIssue.setSummary("Sonar Review #456 - Wrong identation");
-    expectedIssue.setDescription("Violation detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\nMessage from reviewer:\n{quote}\nHello world!\n{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/project_reviews/view/456");
+    expectedIssue.setSummary("Sonar Issue #ABCD - Avoid cycle between java packages");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/issue/show/ABCD");
     expectedIssue.setComponents(new RemoteComponent[] {new RemoteComponent("123", null)});
 
     // Verify
-    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(review, settings, "Hello world!");
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
 
     assertThat(returnedIssue).isEqualTo(expectedIssue);
   }

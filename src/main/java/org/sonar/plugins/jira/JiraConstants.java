@@ -24,7 +24,7 @@ public final class JiraConstants {
   private JiraConstants() {
   }
 
-  public static final String REVIEW_DATA_PROPERTY_KEY = "jira-issue-key";
+  public static final String SONAR_ISSUE_DATA_PROPERTY_KEY = "jira-issue-key";
 
   // ===================== PLUGIN PROPERTIES =====================
 

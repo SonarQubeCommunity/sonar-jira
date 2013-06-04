@@ -25,90 +25,80 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.config.Settings;
-import org.sonar.api.workflow.Comment;
-import org.sonar.api.workflow.MutableReview;
-import org.sonar.api.workflow.Review;
-import org.sonar.api.workflow.WorkflowContext;
+import org.sonar.api.issue.Issue;
+import org.sonar.api.issue.action.Function;
+import org.sonar.api.issue.internal.DefaultIssue;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class LinkFunctionTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-
-  private LinkFunction action;
+  private LinkFunction function;
   private JiraIssueCreator jiraIssueCreator;
-  private MutableReview mutableReview;
-  private Comment comment;
-  private Review review;
-  private WorkflowContext workflowContext;
+  private Issue sonarIssue;
+  private Function.Context context;
   private RemoteIssue remoteIssue;
   private Settings settings;
 
   @Before
   public void init() throws Exception {
-    mutableReview = mock(MutableReview.class);
-    comment = mock(Comment.class);
-    when(mutableReview.createComment()).thenReturn(comment);
-    review = mock(Review.class);
-    workflowContext = mock(WorkflowContext.class);
+    sonarIssue = new DefaultIssue().setKey("ABCD");
     settings = new Settings();
-    when(workflowContext.getProjectSettings()).thenReturn(settings);
+
+    context = mock(Function.Context.class);
+    when(context.issue()).thenReturn(sonarIssue);
+    when(context.projectSettings()).thenReturn(settings);
 
     jiraIssueCreator = mock(JiraIssueCreator.class);
     remoteIssue = new RemoteIssue();
     remoteIssue.setKey("FOO-15");
-    when(jiraIssueCreator.createIssue(review, settings, null)).thenReturn(remoteIssue);
+    when(jiraIssueCreator.createIssue(sonarIssue, settings)).thenReturn(remoteIssue);
 
-    action = new LinkFunction(jiraIssueCreator);
+    function = new LinkFunction(jiraIssueCreator);
   }
 
   @Test
-  public void shouldExecute() throws Exception {
-    action.doExecute(mutableReview, review, workflowContext, new HashMap<String, String>());
+  public void should_execute() throws Exception {
+    function.createJiraIssue(context);
 
-    verify(jiraIssueCreator).createIssue(review, settings, null);
-    verify(mutableReview).createComment();
-    verify(mutableReview).setProperty(JiraConstants.REVIEW_DATA_PROPERTY_KEY, "FOO-15");
+    verify(jiraIssueCreator).createIssue(sonarIssue, settings);
+    verify(context).addComment(anyString());
+    verify(context).setAttribute(JiraConstants.SONAR_ISSUE_DATA_PROPERTY_KEY, "FOO-15");
   }
 
   @Test
-  public void shouldFailExecuteIfRemoteProblem() throws Exception {
-    when(jiraIssueCreator.createIssue(review, settings, null)).thenThrow(new RemoteException("Server Error"));
+  public void should_fail_execute_if_remote_problem() throws Exception {
+    when(jiraIssueCreator.createIssue(sonarIssue, settings)).thenThrow(new RemoteException("Server Error"));
 
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("Impossible to create an issue on JIRA. A problem occured with the remote server: Server Error");
 
-    action.doExecute(mutableReview, review, workflowContext, new HashMap<String, String>());
+    function.createJiraIssue(context);
   }
 
   @Test
-  public void testCreateComment() throws Exception {
-    when(workflowContext.getUserId()).thenReturn(45L);
+  public void test_create_comment() throws Exception {
     settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
 
-    action.createComment(remoteIssue, mutableReview, workflowContext, new HashMap<String, String>());
+    function.createComment(remoteIssue, context);
 
-    verify(comment).setUserId(45L);
-    verify(comment).setMarkdownText("Review linked to JIRA issue: http://my.jira.server/browse/FOO-15");
+    verify(context).addComment("Issue linked to JIRA issue: http://my.jira.server/browse/FOO-15");
   }
 
   @Test
-  public void testGenerateCommentText() throws Exception {
-    HashMap<String, String> params = new HashMap<String, String>();
-    params.put("text", "Hello world");
+  public void test_generate_comment_text() throws Exception {
     settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
 
-    String commentText = action.generateCommentText(remoteIssue, workflowContext, params);
-    assertThat(commentText).isEqualTo("Hello world\n\nReview linked to JIRA issue: http://my.jira.server/browse/FOO-15");
+    String commentText = function.generateCommentText(remoteIssue, context);
+    assertThat(commentText).isEqualTo("Issue linked to JIRA issue: http://my.jira.server/browse/FOO-15");
   }
 
 }

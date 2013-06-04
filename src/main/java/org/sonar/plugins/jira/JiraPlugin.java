@@ -27,9 +27,9 @@ import org.sonar.api.SonarPlugin;
 import org.sonar.plugins.jira.metrics.JiraMetrics;
 import org.sonar.plugins.jira.metrics.JiraSensor;
 import org.sonar.plugins.jira.metrics.JiraWidget;
+import org.sonar.plugins.jira.reviews.JiraActionDefinition;
 import org.sonar.plugins.jira.reviews.JiraIssueCreator;
 import org.sonar.plugins.jira.reviews.LinkFunction;
-import org.sonar.plugins.jira.reviews.WorkflowBuilder;
 
 import java.util.List;
 
@@ -60,13 +60,15 @@ import java.util.List;
 })
 public final class JiraPlugin extends SonarPlugin {
 
+
+
   public List getExtensions() {
     return ImmutableList.of(
       // metrics part
       JiraMetrics.class, JiraSensor.class, JiraWidget.class,
 
-      // reviews part
-      JiraIssueCreator.class, LinkFunction.class, WorkflowBuilder.class
+      // issues part
+      JiraIssueCreator.class, LinkFunction.class, JiraActionDefinition.class
     );
   }
 }

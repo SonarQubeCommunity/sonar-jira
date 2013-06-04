@@ -19,24 +19,17 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.JiraSoapService;
-import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
-import com.atlassian.jira.rpc.soap.client.RemoteComponent;
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
-import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
+import com.atlassian.jira.rpc.soap.client.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.api.CoreProperties;
-import org.sonar.api.Properties;
-import org.sonar.api.Property;
-import org.sonar.api.PropertyType;
-import org.sonar.api.ServerExtension;
+import org.sonar.api.*;
 import org.sonar.api.config.Settings;
+import org.sonar.api.issue.Issue;
+import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RulePriority;
 import org.sonar.api.utils.SonarException;
-import org.sonar.api.workflow.Review;
 import org.sonar.plugins.jira.JiraConstants;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
@@ -132,14 +125,16 @@ public class JiraIssueCreator implements ServerExtension {
 
   private static final String QUOTE = "\n{quote}\n";
   private static final Logger LOG = LoggerFactory.getLogger(JiraIssueCreator.class);
+  private final RuleFinder ruleFinder;
 
-  public JiraIssueCreator() {
+  public JiraIssueCreator(RuleFinder ruleFinder) {
+    this.ruleFinder = ruleFinder;
   }
 
-  public RemoteIssue createIssue(Review review, Settings settings, String commentText) throws RemoteException {
+  public RemoteIssue createIssue(Issue sonarIssue, Settings settings) throws RemoteException {
     JiraSoapSession soapSession = createSoapSession(settings);
 
-    return doCreateIssue(review, soapSession, settings, commentText);
+    return doCreateIssue(sonarIssue, soapSession, settings);
   }
 
   protected JiraSoapSession createSoapSession(Settings settings) {
@@ -158,7 +153,7 @@ public class JiraIssueCreator implements ServerExtension {
     return soapSession;
   }
 
-  protected RemoteIssue doCreateIssue(Review review, JiraSoapSession soapSession, Settings settings, String commentText) {
+  protected RemoteIssue doCreateIssue(Issue sonarIssue, JiraSoapSession soapSession, Settings settings) {
     // Connect to JIRA
     String jiraUrl = settings.getString(JiraConstants.SERVER_URL_PROPERTY);
     String userName = settings.getString(JiraConstants.USERNAME_PROPERTY);
@@ -174,7 +169,7 @@ public class JiraIssueCreator implements ServerExtension {
     String authToken = soapSession.getAuthenticationToken();
 
     // And create the issue
-    RemoteIssue issue = initRemoteIssue(review, settings, commentText);
+    RemoteIssue issue = initRemoteIssue(sonarIssue, settings);
     RemoteIssue returnedIssue = sendRequest(jiraSoapService, authToken, issue, jiraUrl, userName);
 
     String issueKey = returnedIssue.getKey();
@@ -199,45 +194,41 @@ public class JiraIssueCreator implements ServerExtension {
     }
   }
 
-  protected RemoteIssue initRemoteIssue(Review review, Settings settings, String commentText) {
+  protected RemoteIssue initRemoteIssue(Issue sonarIssue, Settings settings) {
     RemoteIssue issue = new RemoteIssue();
     issue.setProject(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
     issue.setType(settings.getString(JiraConstants.JIRA_ISSUE_TYPE_ID));
-    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(review.getSeverity()), settings));
-    issue.setSummary(generateIssueSummary(review));
-    issue.setDescription(generateIssueDescription(review, settings, commentText));
+    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(sonarIssue.severity()), settings));
+    issue.setSummary(generateIssueSummary(sonarIssue));
+    issue.setDescription(generateIssueDescription(sonarIssue, settings));
     String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
     if (!JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK.equals(componentId)) {
       RemoteComponent rc = new RemoteComponent();
       rc.setId(componentId);
-      issue.setComponents(new RemoteComponent[] {rc});
+      issue.setComponents(new RemoteComponent[]{rc});
     }
     return issue;
   }
 
-  protected String generateIssueSummary(Review review) {
-    StringBuilder summary = new StringBuilder("Sonar Review #");
-    summary.append(review.getReviewId());
+  protected String generateIssueSummary(Issue sonarIssue) {
+    Rule rule = ruleFinder.findByKey(sonarIssue.ruleKey());
+
+    StringBuilder summary = new StringBuilder("Sonar Issue #");
+    summary.append(sonarIssue.key());
     summary.append(" - ");
-    summary.append(review.getRuleName());
+    summary.append(rule.getName().toString());
     return summary.toString();
   }
 
-  protected String generateIssueDescription(Review review, Settings settings, String commentText) {
-    StringBuilder description = new StringBuilder("Violation detail:");
+  protected String generateIssueDescription(Issue sonarIssue, Settings settings) {
+    StringBuilder description = new StringBuilder("Issue detail:");
     description.append(QUOTE);
-    description.append(review.getMessage());
+    description.append(sonarIssue.message());
     description.append(QUOTE);
-    if (StringUtils.isNotBlank(commentText)) {
-      description.append("\nMessage from reviewer:");
-      description.append(QUOTE);
-      description.append(commentText);
-      description.append(QUOTE);
-    }
     description.append("\n\nCheck it on Sonar: ");
     description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
-    description.append("/project_reviews/view/");
-    description.append(review.getReviewId());
+    description.append("/issue/show/");
+    description.append(sonarIssue.key());
     return description.toString();
   }
 

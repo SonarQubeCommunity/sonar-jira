@@ -20,30 +20,26 @@
 package org.sonar.plugins.jira.reviews;
 
 import org.junit.Test;
-import org.sonar.api.workflow.Workflow;
-import org.sonar.api.workflow.condition.Condition;
-import org.sonar.api.workflow.screen.Screen;
+import org.sonar.api.issue.action.Action;
+import org.sonar.api.issue.action.Actions;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
-public class WorkflowBuilderTest {
+public class JiraActionDefinitionTest {
 
   @Test
-  public void checkStart() throws Exception {
-    Workflow workflow = mock(Workflow.class);
+  public void check_start() throws Exception {
+    Actions actions = new Actions();
     LinkFunction function = mock(LinkFunction.class);
 
-    WorkflowBuilder builder = new WorkflowBuilder(workflow, function);
+    JiraActionDefinition builder = new JiraActionDefinition(actions, function);
     builder.start();
 
-    verify(workflow, times(1)).addCommand("link-to-jira");
-    verify(workflow, times(1)).setScreen(anyString(), any(Screen.class));
-    verify(workflow, times(1)).addFunction("link-to-jira", function);
-    verify(workflow, times(14)).addCondition(anyString(), any(Condition.class));
+    Action action = actions.list().get(0);
+    assertThat(action.key()).isEqualTo("link-to-jira");
+    assertThat(action.functions().get(0)).isEqualTo(function);
+    assertThat(action.conditions()).isNotEmpty();
   }
 
 }

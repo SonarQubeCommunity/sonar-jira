@@ -20,19 +20,14 @@
 package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import org.apache.commons.lang.StringUtils;
 import org.sonar.api.ServerExtension;
-import org.sonar.api.workflow.Comment;
-import org.sonar.api.workflow.MutableReview;
-import org.sonar.api.workflow.Review;
-import org.sonar.api.workflow.WorkflowContext;
-import org.sonar.api.workflow.function.Function;
+import org.sonar.api.config.Settings;
+import org.sonar.api.issue.action.Function;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;
-import java.util.Map;
 
-public class LinkFunction extends Function implements ServerExtension {
+public class LinkFunction implements Function, ServerExtension {
 
   private final JiraIssueCreator jiraIssueCreator;
 
@@ -40,35 +35,53 @@ public class LinkFunction extends Function implements ServerExtension {
     this.jiraIssueCreator = jiraIssueCreator;
   }
 
-  @Override
-  public void doExecute(MutableReview review, Review initialReview, WorkflowContext context, Map<String, String> parameters) {
+  public void execute(Context context) {
+    checkConditions(context.projectSettings());
+    createJiraIssue(context);
+  }
+
+  protected void createJiraIssue(Context context){
     RemoteIssue issue;
     try {
-      issue = jiraIssueCreator.createIssue(initialReview, context.getProjectSettings(), parameters.get("text"));
+      issue = jiraIssueCreator.createIssue(context.issue(), context.projectSettings());
     } catch (RemoteException e) {
       throw new IllegalStateException("Impossible to create an issue on JIRA. A problem occured with the remote server: " + e.getMessage(), e);
     }
 
-    createComment(issue, review, context, parameters);
+    createComment(issue, context);
     // and add the property
-    review.setProperty(JiraConstants.REVIEW_DATA_PROPERTY_KEY, issue.getKey());
+    context.setAttribute(JiraConstants.SONAR_ISSUE_DATA_PROPERTY_KEY, issue.getKey());
   }
 
-  protected void createComment(RemoteIssue issue, MutableReview review, WorkflowContext context, Map<String, String> parameters) {
-    Comment newComment = review.createComment();
-    newComment.setUserId(context.getUserId());
-    newComment.setMarkdownText(generateCommentText(issue, context, parameters));
+  private void checkConditions(Settings settingss) {
+    checkProperty(JiraConstants.SERVER_URL_PROPERTY, settingss);
+    checkProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, settingss);
+    checkProperty(JiraConstants.USERNAME_PROPERTY, settingss);
+    checkProperty(JiraConstants.PASSWORD_PROPERTY, settingss);
+    checkProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, settingss);
+    checkProperty(JiraConstants.JIRA_INFO_PRIORITY_ID, settingss);
+    checkProperty(JiraConstants.JIRA_MINOR_PRIORITY_ID, settingss);
+    checkProperty(JiraConstants.JIRA_MAJOR_PRIORITY_ID, settingss);
+    checkProperty(JiraConstants.JIRA_CRITICAL_PRIORITY_ID, settingss);
+    checkProperty(JiraConstants.JIRA_BLOCKER_PRIORITY_ID, settingss);
+    checkProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, settingss);
+    checkProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, settingss);
   }
 
-  protected String generateCommentText(RemoteIssue issue, WorkflowContext context, Map<String, String> parameters) {
-    StringBuilder message = new StringBuilder();
-    String text = parameters.get("text");
-    if (!StringUtils.isBlank(text)) {
-      message.append(text);
-      message.append("\n\n");
+  private void checkProperty(String property, Settings settings) {
+    if (!settings.hasKey(property)) {
+      throw new IllegalStateException("The following property '" + property + "' must be set.");
     }
-    message.append("Review linked to JIRA issue: ");
-    message.append(context.getProjectSettings().getString(JiraConstants.SERVER_URL_PROPERTY));
+  }
+
+  protected void createComment(RemoteIssue issue, Context context) {
+    context.addComment(generateCommentText(issue, context));
+  }
+
+  protected String generateCommentText(RemoteIssue issue, Context context) {
+    StringBuilder message = new StringBuilder();
+    message.append("Issue linked to JIRA issue: ");
+    message.append(context.projectSettings().getString(JiraConstants.SERVER_URL_PROPERTY));
     message.append("/browse/");
     message.append(issue.getKey());
     return message.toString();
