@@ -70,7 +70,7 @@ public class LinkFunction implements Function, ServerExtension {
 
   private void checkProperty(String property, Settings settings) {
     if (!settings.hasKey(property)) {
-      throw new IllegalStateException("The JIRA property '"+ property +"' must be first defined to use this 'Link to JIRA' action");
+      throw new IllegalStateException("The JIRA property \""+ property + "\" must be defined before you can use the \"Link to Jira\" button");
     }
   }
 
