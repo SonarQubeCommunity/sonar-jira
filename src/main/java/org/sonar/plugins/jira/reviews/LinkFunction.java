@@ -53,19 +53,19 @@ public class LinkFunction implements Function, ServerExtension {
     context.setAttribute(JiraConstants.SONAR_ISSUE_DATA_PROPERTY_KEY, issue.getKey());
   }
 
-  private void checkConditions(Settings settingss) {
-    checkProperty(JiraConstants.SERVER_URL_PROPERTY, settingss);
-    checkProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, settingss);
-    checkProperty(JiraConstants.USERNAME_PROPERTY, settingss);
-    checkProperty(JiraConstants.PASSWORD_PROPERTY, settingss);
-    checkProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, settingss);
-    checkProperty(JiraConstants.JIRA_INFO_PRIORITY_ID, settingss);
-    checkProperty(JiraConstants.JIRA_MINOR_PRIORITY_ID, settingss);
-    checkProperty(JiraConstants.JIRA_MAJOR_PRIORITY_ID, settingss);
-    checkProperty(JiraConstants.JIRA_CRITICAL_PRIORITY_ID, settingss);
-    checkProperty(JiraConstants.JIRA_BLOCKER_PRIORITY_ID, settingss);
-    checkProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, settingss);
-    checkProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, settingss);
+  private void checkConditions(Settings settings) {
+    checkProperty(JiraConstants.SERVER_URL_PROPERTY, settings);
+    checkProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, settings);
+    checkProperty(JiraConstants.USERNAME_PROPERTY, settings);
+    checkProperty(JiraConstants.PASSWORD_PROPERTY, settings);
+    checkProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, settings);
+    checkProperty(JiraConstants.JIRA_INFO_PRIORITY_ID, settings);
+    checkProperty(JiraConstants.JIRA_MINOR_PRIORITY_ID, settings);
+    checkProperty(JiraConstants.JIRA_MAJOR_PRIORITY_ID, settings);
+    checkProperty(JiraConstants.JIRA_CRITICAL_PRIORITY_ID, settings);
+    checkProperty(JiraConstants.JIRA_BLOCKER_PRIORITY_ID, settings);
+    checkProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, settings);
+    checkProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, settings);
   }
 
   private void checkProperty(String property, Settings settings) {
