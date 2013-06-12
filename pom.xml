@@ -11,7 +11,7 @@
   <packaging>sonar-plugin</packaging>
 
   <name>Sonar JIRA Plugin</name>
-  <description>Connects Sonar to Atlassian JIRA in various ways.</description>
+  <description>Connects SonarQube to Atlassian JIRA in various ways.</description>
   <url>http://docs.codehaus.org/display/SONAR/Jira+Plugin</url>
 
   <organization>
