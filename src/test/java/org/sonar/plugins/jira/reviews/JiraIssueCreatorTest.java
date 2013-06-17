@@ -235,4 +235,25 @@ public class JiraIssueCreatorTest {
     assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.MINOR, settings)).isEqualTo("4");
     assertThat(jiraIssueCreator.sonarSeverityToJiraPriorityId(RulePriority.INFO, settings)).isEqualTo("5");
   }
+
+  @Test
+  public void shouldInitRemoteIssueWithoutName() throws Exception {
+    // Given that
+    when(ruleFinder.findByKey(RuleKey.of("squid", "CycleBetweenPackages"))).thenReturn(org.sonar.api.rules.Rule.create().setName(null));
+
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("3");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("Sonar Issue #ABCD");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+      "{quote}\n\n\nCheck it on Sonar: http://my.sonar.com/issue/show/ABCD");
+
+    // Verify
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
+
+    assertThat(returnedIssue.getSummary()).isEqualTo(expectedIssue.getSummary());
+    assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
+  }
 }

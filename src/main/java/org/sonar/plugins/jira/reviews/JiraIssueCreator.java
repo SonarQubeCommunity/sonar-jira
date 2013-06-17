@@ -215,8 +215,10 @@ public class JiraIssueCreator implements ServerExtension {
 
     StringBuilder summary = new StringBuilder("Sonar Issue #");
     summary.append(sonarIssue.key());
-    summary.append(" - ");
-    summary.append(rule.getName().toString());
+    if (rule.getName() != null) {
+      summary.append(" - ");
+      summary.append(rule.getName().toString());
+    }
     return summary.toString();
   }
 
