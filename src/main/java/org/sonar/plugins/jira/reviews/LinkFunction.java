@@ -20,6 +20,8 @@
 package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
 import org.sonar.api.issue.action.Function;
@@ -53,7 +55,8 @@ public class LinkFunction implements Function, ServerExtension {
     context.setAttribute(JiraConstants.SONAR_ISSUE_DATA_PROPERTY_KEY, issue.getKey());
   }
 
-  private void checkConditions(Settings settings) {
+  @VisibleForTesting
+  void checkConditions(Settings settings) {
     checkProperty(JiraConstants.SERVER_URL_PROPERTY, settings);
     checkProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, settings);
     checkProperty(JiraConstants.USERNAME_PROPERTY, settings);
@@ -69,7 +72,7 @@ public class LinkFunction implements Function, ServerExtension {
   }
 
   private void checkProperty(String property, Settings settings) {
-    if (!settings.hasKey(property)) {
+    if (!settings.hasKey(property) && !settings.hasDefaultValue(property)) {
       throw new IllegalStateException("The JIRA property \""+ property + "\" must be defined before you can use the \"Link to Jira\" button");
     }
   }

@@ -31,7 +31,6 @@ import org.sonar.api.issue.internal.DefaultIssue;
 import org.sonar.plugins.jira.JiraConstants;
 
 import java.rmi.RemoteException;
-import java.util.HashMap;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -86,7 +85,7 @@ public class LinkFunctionTest {
 
   @Test
   public void test_create_comment() throws Exception {
-    settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
+    settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
 
     function.createComment(remoteIssue, context);
 
@@ -95,10 +94,37 @@ public class LinkFunctionTest {
 
   @Test
   public void test_generate_comment_text() throws Exception {
-    settings.appendProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
+    settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
 
     String commentText = function.generateCommentText(remoteIssue, context);
     assertThat(commentText).isEqualTo("Issue linked to JIRA issue: http://my.jira.server/browse/FOO-15");
+  }
+
+  @Test
+  public void should_check_settings() {
+    settings.setProperty(JiraConstants.SERVER_URL_PROPERTY, "http://my.jira.server");
+    settings.setProperty(JiraConstants.SOAP_BASE_URL_PROPERTY, "/rpc/soap/jirasoapservice-v2");
+    settings.setProperty(JiraConstants.USERNAME_PROPERTY, "john");
+    settings.setProperty(JiraConstants.PASSWORD_PROPERTY, "1234");
+    settings.setProperty(JiraConstants.JIRA_PROJECT_KEY_PROPERTY, "SONAR");
+    settings.setProperty(JiraConstants.JIRA_INFO_PRIORITY_ID, 5);
+    settings.setProperty(JiraConstants.JIRA_MINOR_PRIORITY_ID, 4);
+    settings.setProperty(JiraConstants.JIRA_MAJOR_PRIORITY_ID, 3);
+    settings.setProperty(JiraConstants.JIRA_CRITICAL_PRIORITY_ID, 2);
+    settings.setProperty(JiraConstants.JIRA_BLOCKER_PRIORITY_ID, 1);
+    settings.setProperty(JiraConstants.JIRA_ISSUE_TYPE_ID, 3);
+    settings.setProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, 18);
+
+    function.checkConditions(settings);
+  }
+
+  @Test
+  public void should_fail_if_settings_is_empty() {
+    try {
+      function.checkConditions(settings);
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalStateException.class);
+    }
   }
 
 }
