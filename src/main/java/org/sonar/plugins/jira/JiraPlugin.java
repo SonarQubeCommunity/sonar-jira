@@ -60,8 +60,6 @@ import java.util.List;
 })
 public final class JiraPlugin extends SonarPlugin {
 
-
-
   public List getExtensions() {
     return ImmutableList.of(
       // metrics part

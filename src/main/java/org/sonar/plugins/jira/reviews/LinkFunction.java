@@ -21,7 +21,6 @@ package org.sonar.plugins.jira.reviews;
 
 import com.atlassian.jira.rpc.soap.client.RemoteIssue;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
 import org.sonar.api.issue.action.Function;
@@ -42,7 +41,7 @@ public class LinkFunction implements Function, ServerExtension {
     createJiraIssue(context);
   }
 
-  protected void createJiraIssue(Context context){
+  protected void createJiraIssue(Context context) {
     RemoteIssue issue;
     try {
       issue = jiraIssueCreator.createIssue(context.issue(), context.projectSettings());
@@ -73,7 +72,7 @@ public class LinkFunction implements Function, ServerExtension {
 
   private void checkProperty(String property, Settings settings) {
     if (!settings.hasKey(property) && !settings.hasDefaultValue(property)) {
-      throw new IllegalStateException("The JIRA property \""+ property + "\" must be defined before you can use the \"Link to Jira\" button");
+      throw new IllegalStateException("The JIRA property \"" + property + "\" must be defined before you can use the \"Link to Jira\" button");
     }
   }
 
