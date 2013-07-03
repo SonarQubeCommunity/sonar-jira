@@ -198,7 +198,7 @@ public class JiraIssueCreator implements ServerExtension {
     RemoteIssue issue = new RemoteIssue();
     issue.setProject(settings.getString(JiraConstants.JIRA_PROJECT_KEY_PROPERTY));
     issue.setType(settings.getString(JiraConstants.JIRA_ISSUE_TYPE_ID));
-    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOfString(sonarIssue.severity()), settings));
+    issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOf(sonarIssue.severity()), settings));
     issue.setSummary(generateIssueSummary(sonarIssue));
     issue.setDescription(generateIssueDescription(sonarIssue, settings));
     String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
@@ -215,7 +215,7 @@ public class JiraIssueCreator implements ServerExtension {
 
     StringBuilder summary = new StringBuilder("Sonar Issue #");
     summary.append(sonarIssue.key());
-    if (rule.getName() != null) {
+    if (rule != null && rule.getName() != null) {
       summary.append(" - ");
       summary.append(rule.getName().toString());
     }
