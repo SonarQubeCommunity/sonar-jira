@@ -21,9 +21,6 @@ package org.sonar.plugins.jira;
 
 public final class JiraConstants {
 
-  private JiraConstants() {
-  }
-
   public static final String SONAR_ISSUE_DATA_PROPERTY_KEY = "jira-issue-key";
 
   // ===================== PLUGIN PROPERTIES =====================
@@ -50,4 +47,8 @@ public final class JiraConstants {
   public static final String JIRA_ISSUE_TYPE_ID = "sonar.jira.issue.type.id";
 
   public static final String JIRA_ISSUE_COMPONENT_ID = "sonar.jira.issue.component.id";
+
+  private JiraConstants() {
+  }
+
 }
