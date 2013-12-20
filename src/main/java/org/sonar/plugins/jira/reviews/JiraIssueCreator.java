@@ -62,7 +62,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_PROJECT_KEY_PROPERTY,
     defaultValue = "",
     name = "JIRA project key",
-    description = "Key of the JIRA project on which the issues should be created.",
+    description = "Key of the JIRA project on which the JIRA issues should be created.",
     global = false,
     project = true
   ),
@@ -70,7 +70,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_INFO_PRIORITY_ID,
     defaultValue = "5",
     name = "JIRA priority id for INFO",
-    description = "JIRA priority id used to create issues for Sonar violations with severity INFO. Default is 5 (Trivial).",
+    description = "JIRA priority id used to create JIRA issues for SonarQube issues with severity INFO. Default is 5 (Trivial).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -79,7 +79,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_MINOR_PRIORITY_ID,
     defaultValue = "4",
     name = "JIRA priority id for MINOR",
-    description = "JIRA priority id used to create issues for Sonar violations with severity MINOR. Default is 4 (Minor).",
+    description = "JIRA priority id used to create JIRA issues for SonarQube issues with severity MINOR. Default is 4 (Minor).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -88,7 +88,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_MAJOR_PRIORITY_ID,
     defaultValue = "3",
     name = "JIRA priority id for MAJOR",
-    description = "JIRA priority id used to create issues for Sonar violations with severity MAJOR. Default is 3 (Major).",
+    description = "JIRA priority id used to create JIRA issues for SonarQube issues with severity MAJOR. Default is 3 (Major).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -97,7 +97,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_CRITICAL_PRIORITY_ID,
     defaultValue = "2",
     name = "JIRA priority id for CRITICAL",
-    description = "JIRA priority id used to create issues for Sonar violations with severity CRITICAL. Default is 2 (Critical).",
+    description = "JIRA priority id used to create JIRA issues for SonarQube issues with severity CRITICAL. Default is 2 (Critical).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -106,7 +106,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_BLOCKER_PRIORITY_ID,
     defaultValue = "1",
     name = "JIRA priority id for BLOCKER",
-    description = "JIRA priority id used to create issues for Sonar violations with severity BLOCKER. Default is 1 (Blocker).",
+    description = "JIRA priority id used to create JIRA issues for SonarQube issues with severity BLOCKER. Default is 1 (Blocker).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -115,7 +115,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_ISSUE_TYPE_ID,
     defaultValue = "3",
     name = "Id of JIRA issue type",
-    description = "JIRA issue type id used to create issues for Sonar violations. Default is 3 (= Task in a default JIRA installation).",
+    description = "JIRA issue type id used to create JIRA issues for SonarQube issues. Default is 3 (= Task in a default JIRA installation).",
     global = true,
     project = true,
     type = PropertyType.INTEGER
@@ -124,7 +124,7 @@ import java.rmi.RemoteException;
     key = JiraConstants.JIRA_ISSUE_COMPONENT_ID,
     defaultValue = "",
     name = "Id of JIRA component",
-    description = "JIRA component id used to create issues for Sonar violations. By default no component is set.",
+    description = "JIRA component id used to create JIRA issues for SonarQube issues. By default no component is set.",
     global = false,
     project = true,
     type = PropertyType.INTEGER
@@ -222,7 +222,7 @@ public class JiraIssueCreator implements ServerExtension {
   protected String generateIssueSummary(Issue sonarIssue) {
     Rule rule = ruleFinder.findByKey(sonarIssue.ruleKey());
 
-    StringBuilder summary = new StringBuilder("Sonar Issue #");
+    StringBuilder summary = new StringBuilder("SonarQube Issue #");
     summary.append(sonarIssue.key());
     if (rule != null && rule.getName() != null) {
       summary.append(" - ");
@@ -236,7 +236,7 @@ public class JiraIssueCreator implements ServerExtension {
     description.append(QUOTE);
     description.append(sonarIssue.message());
     description.append(QUOTE);
-    description.append("\n\nCheck it on Sonar: ");
+    description.append("\n\nCheck it on SonarQube: ");
     description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
     description.append("/issue/show/");
     description.append(sonarIssue.key());
