@@ -19,11 +19,20 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.*;
+import com.atlassian.jira.rpc.soap.client.JiraSoapService;
+import com.atlassian.jira.rpc.soap.client.RemoteAuthenticationException;
+import com.atlassian.jira.rpc.soap.client.RemoteComponent;
+import com.atlassian.jira.rpc.soap.client.RemoteIssue;
+import com.atlassian.jira.rpc.soap.client.RemotePermissionException;
+import com.atlassian.jira.rpc.soap.client.RemoteValidationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.api.*;
+import org.sonar.api.CoreProperties;
+import org.sonar.api.Properties;
+import org.sonar.api.Property;
+import org.sonar.api.PropertyType;
+import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
 import org.sonar.api.issue.Issue;
 import org.sonar.api.rules.Rule;
@@ -113,7 +122,7 @@ import java.rmi.RemoteException;
   ),
   @Property(
     key = JiraConstants.JIRA_ISSUE_COMPONENT_ID,
-    defaultValue = JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK,
+    defaultValue = "",
     name = "Id of JIRA component",
     description = "JIRA component id used to create issues for Sonar violations. By default no component is set.",
     global = false,
@@ -201,11 +210,11 @@ public class JiraIssueCreator implements ServerExtension {
     issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOf(sonarIssue.severity()), settings));
     issue.setSummary(generateIssueSummary(sonarIssue));
     issue.setDescription(generateIssueDescription(sonarIssue, settings));
-    String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
-    if (!JiraConstants.JIRA_ISSUE_COMPONENT_ID_BLANK.equals(componentId)) {
+    if (settings.hasKey(JiraConstants.JIRA_ISSUE_COMPONENT_ID)) {
+      String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
       RemoteComponent rc = new RemoteComponent();
       rc.setId(componentId);
-      issue.setComponents(new RemoteComponent[]{rc});
+      issue.setComponents(new RemoteComponent[] {rc});
     }
     return issue;
   }
