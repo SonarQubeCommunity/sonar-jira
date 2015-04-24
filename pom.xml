@@ -12,7 +12,7 @@
 
   <name>Sonar JIRA Plugin</name>
   <description>Connects SonarQube to Atlassian JIRA in various ways.</description>
-  <url>http://docs.codehaus.org/display/SONAR/Jira+Plugin</url>
+  <url>http://redirect.sonarsource.com/plugins/jira.html</url>
 
   <organization>
     <name>SonarSource</name>
