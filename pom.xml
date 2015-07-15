@@ -10,8 +10,8 @@
   <version>1.3-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
 
-  <name>Sonar JIRA Plugin</name>
-  <description>Connects SonarQube to Atlassian JIRA in various ways.</description>
+  <name>JIRA Plugin for SonarQube</name>
+  <description>Connects SonarQube to Atlassian JIRA in various ways</description>
   <url>http://redirect.sonarsource.com/plugins/jira.html</url>
 
   <organization>
