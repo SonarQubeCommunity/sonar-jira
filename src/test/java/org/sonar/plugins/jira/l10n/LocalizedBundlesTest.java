@@ -1,5 +1,5 @@
 /*
- * Sonar JIRA Plugin
+ * JIRA Plugin for SonarQube
  * Copyright (C) 2009 SonarSource
  * dev@sonar.codehaus.org
  *
