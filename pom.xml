@@ -50,18 +50,18 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:SonarCommunity/sonar-jira.git</connection>
-    <developerConnection>scm:git:git@github.com:SonarCommunity/sonar-jira.git</developerConnection>
-    <url>https://github.com/SonarCommunity/sonar-jira</url>
+    <connection>scm:git:git@github.com:SonarSource/sonar-jira.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonar-jira.git</developerConnection>
+    <url>https://github.com/SonarSource/sonar-jira</url>
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/SonarCommunity/sonar-jira/issues</url>
+    <url>https://github.com/SonarSource/sonar-jira/issues</url>
   </issueManagement>
   <ciManagement>
     <system>TravisCI</system>
-    <url>https://travis-ci.org/SonarCommunity/sonar-jira</url>
+    <url>https://travis-ci.org/SonarSource/sonar-jira</url>
   </ciManagement>
 
   <properties>
