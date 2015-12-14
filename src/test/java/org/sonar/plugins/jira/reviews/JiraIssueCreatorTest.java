@@ -178,7 +178,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/show/ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
@@ -187,7 +187,36 @@ public class JiraIssueCreatorTest {
     assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
     assertThat(returnedIssue).isEqualTo(expectedIssue);
   }
+  
+  @Test
+  public void shouldInitRemoteIssueWithExtendedDescription() throws Exception {
+    // Given that
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("3");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+	  "{quote}\n\n" +
+      "component main:project:org.sonar.plugins.jira.JiraPlugin.java, line 64" +
+      "\n\nCheck it on SonarQube: http://my.sonar.com/issues/show/ABCD");
 
+    Issue filledIssue = new DefaultIssue()
+    	      .setKey("ABCD")
+    	      .setMessage("The Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.")
+    	      .setSeverity("MINOR")
+    	      .setRuleKey(RuleKey.of("squid", "CycleBetweenPackages"))
+    	      .setComponentKey("main:project:org.sonar.plugins.jira.JiraPlugin.java")
+    	      .setLine(64);
+    
+    // Verify
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(filledIssue, settings);
+
+    assertThat(returnedIssue.getSummary()).isEqualTo(expectedIssue.getSummary());
+    assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
+  }  
+  
   @Test
   public void shouldInitRemoteIssueWithTaskType() throws Exception {
     // Given that
@@ -198,7 +227,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/show/ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
@@ -218,7 +247,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/show/ABCD");
     expectedIssue.setComponents(new RemoteComponent[] {new RemoteComponent("123", null)});
 
     // Verify
@@ -247,7 +276,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/show/ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
