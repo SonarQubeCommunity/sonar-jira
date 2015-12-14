@@ -236,6 +236,9 @@ public class JiraIssueCreator implements ServerExtension {
     description.append(QUOTE);
     description.append(sonarIssue.message());
     description.append(QUOTE);
+	description.append("\ncomponent "+sonarIssue.componentKey());
+	if(sonarIssue.line() > 0)
+		description.append(", line "+sonarIssue.line());		
     description.append("\n\nCheck it on SonarQube: ");
     description.append(settings.getString(CoreProperties.SERVER_BASE_URL));
     description.append("/issues/show/");
