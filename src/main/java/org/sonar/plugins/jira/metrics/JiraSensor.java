@@ -86,18 +86,16 @@ public class JiraSensor implements Sensor {
     }
     return project.isRoot() && !missingMandatoryParameters();
   }
-
+  
   public void analyse(Project project, SensorContext context) {
-    try {
-      JiraSoapSession session = new JiraSoapSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
+    try (JiraSoapSession session = new JiraSoapSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));) {
+      
       session.connect(getUsername(), getPassword());
-
+      
       JiraSoapService service = session.getJiraSoapService();
       String authToken = session.getAuthenticationToken();
-
+      
       runAnalysis(context, service, authToken);
-
-      session.disconnect();
     } catch (RemoteException e) {
       LOG.error("Error accessing Jira web service, please verify the parameters", e);
     } catch (MalformedURLException e) {

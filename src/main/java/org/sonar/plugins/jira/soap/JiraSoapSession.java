@@ -20,28 +20,34 @@
 
 package org.sonar.plugins.jira.soap;
 
-import com.atlassian.jira.rpc.soap.client.JiraSoapService;
-import com.atlassian.jira.rpc.soap.client.JiraSoapServiceService;
-import com.atlassian.jira.rpc.soap.client.JiraSoapServiceServiceLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URL;
+import java.rmi.RemoteException;
 
 import javax.xml.rpc.ServiceException;
 
-import java.net.URL;
-import java.rmi.RemoteException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonar.api.config.Settings;
+import org.sonar.api.rules.RuleFinder;
+import org.sonar.plugins.jira.JiraService;
+import org.sonar.plugins.jira.JiraSession;
+
+import com.atlassian.jira.rpc.soap.client.JiraSoapService;
+import com.atlassian.jira.rpc.soap.client.JiraSoapServiceService;
+import com.atlassian.jira.rpc.soap.client.JiraSoapServiceServiceLocator;
 
 /**
  * This represents a SOAP session with JIRA including that state of being logged in or not
  */
-public class JiraSoapSession {
+public class JiraSoapSession implements JiraSession {
+	
   private static final Logger LOG = LoggerFactory.getLogger(JiraSoapSession.class);
 
   private JiraSoapServiceService jiraSoapServiceLocator;
   private JiraSoapService jiraSoapService;
   private String token;
   private URL webServiceUrl;
-
+  
   public JiraSoapSession(URL url) {
     this.webServiceUrl = url;
     jiraSoapServiceLocator = new JiraSoapServiceServiceLocator();
@@ -52,15 +58,28 @@ public class JiraSoapSession {
       throw new IllegalStateException("ServiceException during JiraSoapService contruction", e);
     }
   }
-
-  public void connect(String userName, String password) throws RemoteException {
-    LOG.debug("Connnecting via SOAP as : {}", userName);
-    token = getJiraSoapService().login(userName, password);
-    LOG.debug("Connected");
+  
+  protected JiraSoapSession()
+  {	 
   }
 
-  public void disconnect() throws RemoteException {
-    getJiraSoapService().logout(getAuthenticationToken());
+  public void connect(String userName, String password) {
+    LOG.debug("Connnecting via SOAP as : {}", userName);
+    try {
+    	token = getJiraSoapService().login(userName, password);
+  	} catch (RemoteException e) {
+      throw new IllegalStateException("Impossible to connect to the JIRA server (" + webServiceUrl + ").", e);
+    }
+    LOG.debug("Connected");
+  }
+  
+  @Override
+  public void close() {
+	  try {
+		getJiraSoapService().logout(getAuthenticationToken());
+	} catch (RemoteException e) {
+		throw new IllegalStateException(e);
+	}
   }
 
   public String getAuthenticationToken() {
@@ -78,4 +97,10 @@ public class JiraSoapSession {
   public URL getWebServiceUrl() {
     return webServiceUrl;
   }
+
+  @Override
+  public JiraService getJiraService(RuleFinder ruleFinder, Settings settings) {
+	 return new JiraSoapServiceWrapper(this.getJiraSoapService() ,ruleFinder, settings);
+  }
+  
 }

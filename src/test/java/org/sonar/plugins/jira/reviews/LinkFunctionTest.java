@@ -19,7 +19,14 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.rmi.RemoteException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,11 +37,7 @@ import org.sonar.api.issue.action.Function;
 import org.sonar.api.issue.internal.DefaultIssue;
 import org.sonar.plugins.jira.JiraConstants;
 
-import java.rmi.RemoteException;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 
 public class LinkFunctionTest {
 
@@ -44,7 +47,7 @@ public class LinkFunctionTest {
   private JiraIssueCreator jiraIssueCreator;
   private Issue sonarIssue;
   private Function.Context context;
-  private RemoteIssue remoteIssue;
+  private BasicIssue remoteIssue;
   private Settings settings;
 
   @Before
@@ -57,8 +60,7 @@ public class LinkFunctionTest {
     when(context.projectSettings()).thenReturn(settings);
 
     jiraIssueCreator = mock(JiraIssueCreator.class);
-    remoteIssue = new RemoteIssue();
-    remoteIssue.setKey("FOO-15");
+    remoteIssue = new BasicIssue(null, "FOO-15", 1l);
     when(jiraIssueCreator.createIssue(sonarIssue, settings)).thenReturn(remoteIssue);
 
     function = new LinkFunction(jiraIssueCreator);

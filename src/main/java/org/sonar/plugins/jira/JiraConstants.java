@@ -26,9 +26,13 @@ public final class JiraConstants {
   // ===================== PLUGIN PROPERTIES =====================
 
   public static final String SERVER_URL_PROPERTY = "sonar.jira.url";
-
-  public static final String SOAP_BASE_URL_PROPERTY = "sonar.jira.soap.url";
+  public static final String JIRA_USE_REST_PROPERTY = "sonar.jira.rest";
+  
+  public static final String SOAP_BASE_URL_PROPERTY = "sonar.jira.soap.url";  
   public static final String SOAP_BASE_URL_DEF_VALUE = "/rpc/soap/jirasoapservice-v2";
+  
+  public static final String REST_BASE_URL_PROPERTY = "sonar.jira.rest.url";
+  public static final String REST_BASE_URL_DEF_VALUE = "/";
 
   public static final String USERNAME_PROPERTY = "sonar.jira.login.secured";
 
@@ -47,6 +51,7 @@ public final class JiraConstants {
   public static final String JIRA_ISSUE_TYPE_ID = "sonar.jira.issue.type.id";
 
   public static final String JIRA_ISSUE_COMPONENT_ID = "sonar.jira.issue.component.id";
+  public static final String JIRA_ISSUE_SONAR_LABEL = "sonar.jira.issue.sonar.label";
 
   private JiraConstants() {
   }
