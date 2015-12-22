@@ -19,7 +19,6 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -64,8 +63,8 @@ import com.atlassian.jira.rest.client.api.domain.BasicIssue;
   @Property(
     key = JiraConstants.REST_BASE_URL_PROPERTY,
     defaultValue = JiraConstants.REST_BASE_URL_DEF_VALUE,
-    name = "SOAP base URL",
-    description = "Base URL for the SOAP API of the JIRA server",
+    name = "REST base URL",
+    description = "Base URL for the REST API of the JIRA server",
     global = true,
     project = true
   ),
