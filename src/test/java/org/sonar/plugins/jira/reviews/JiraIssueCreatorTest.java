@@ -178,7 +178,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/search#issues=ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
@@ -198,7 +198,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/search#issues=ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
@@ -218,7 +218,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/search#issues=ABCD");
     expectedIssue.setComponents(new RemoteComponent[] {new RemoteComponent("123", null)});
 
     // Verify
@@ -247,7 +247,7 @@ public class JiraIssueCreatorTest {
     expectedIssue.setPriority("4");
     expectedIssue.setSummary("SonarQube Issue #ABCD");
     expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
-      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+      "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issues/search#issues=ABCD");
 
     // Verify
     RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
