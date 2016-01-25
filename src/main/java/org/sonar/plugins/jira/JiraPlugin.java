@@ -56,6 +56,14 @@ import java.util.List;
     global = true,
     project = true,
     module = false
+  ),
+  @Property(
+    key = JiraConstants.JIRA_USE_REST_PROPERTY,
+    defaultValue = "false",
+    name = "Use rest api",
+    description = "Use rest api instead of soap",
+    global = true,
+    project = false
   )
 })
 public final class JiraPlugin extends SonarPlugin {

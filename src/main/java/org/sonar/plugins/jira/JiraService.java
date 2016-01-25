@@ -20,12 +20,20 @@
 
 package org.sonar.plugins.jira;
 
+import java.util.List;
+
 import org.sonar.api.issue.Issue;
 
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
+import com.atlassian.jira.rest.client.api.domain.BasicPriority;
+import com.atlassian.jira.rest.client.api.domain.Filter;
 
 public interface JiraService {
 
-	BasicIssue createIssue(String authToken, Issue sonarIssue);
+    BasicIssue createIssue(String authToken, Issue sonarIssue);
+    List<BasicPriority> getPriorities(String authToken);
+    List<Filter> getFavouriteFilters(String authToken);
+    List<Filter> getSavedFilters(String authToken);
+    List<com.atlassian.jira.rest.client.api.domain.Issue> getIssuesFromFilter(String authToken, String id);
 
 }

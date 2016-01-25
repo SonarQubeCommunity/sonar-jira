@@ -41,17 +41,9 @@ import org.sonar.plugins.jira.soap.JiraSoapSession;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 
 /**
- * SOAP client class that is used for creating issues on a JIRA server
+ * Client class that is used for creating issues on a JIRA server
  */
 @Properties({	
-  @Property(
-    key = JiraConstants.JIRA_USE_REST_PROPERTY,
-    defaultValue = "false",
-    name = "Use rest api",
-    description = "Use rest api instead of soap",
-    global = true,
-    project = false
-  ),
   @Property(
     key = JiraConstants.SOAP_BASE_URL_PROPERTY,
     defaultValue = JiraConstants.SOAP_BASE_URL_DEF_VALUE,
