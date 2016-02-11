@@ -118,9 +118,9 @@ public class JiraSensor implements Sensor {
 
   private JiraSession getSession() throws MalformedURLException {
       if(isUseRestApi())
-          return new JiraRestSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
-      else
           return new JiraSoapSession(new URL(getServerUrl() + "/"));
+      else          
+		  return new JiraRestSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
 }
 
 protected void runAnalysis(SensorContext context, JiraService service, String authToken) throws RemoteException {
