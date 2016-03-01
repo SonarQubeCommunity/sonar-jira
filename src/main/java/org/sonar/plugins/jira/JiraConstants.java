@@ -48,6 +48,8 @@ public final class JiraConstants {
 
   public static final String JIRA_ISSUE_COMPONENT_ID = "sonar.jira.issue.component.id";
 
+  public static final String JIRA_ASSIGNEE = "sonar.jira.issue.assigne";
+
   private JiraConstants() {
   }
 

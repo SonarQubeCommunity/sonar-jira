@@ -128,6 +128,15 @@ import java.rmi.RemoteException;
     global = false,
     project = true,
     type = PropertyType.INTEGER
+  ),
+  @Property(
+    key = JiraConstants.JIRA_ASSIGNEE,
+    defaultValue = "",
+    name = "Jira issues assignee",
+    description = "Which person to assign jira",
+    global = true,
+    project = true,
+    type = PropertyType.STRING
   )
 })
 public class JiraIssueCreator implements ServerExtension {
@@ -210,6 +219,7 @@ public class JiraIssueCreator implements ServerExtension {
     issue.setPriority(sonarSeverityToJiraPriorityId(RulePriority.valueOf(sonarIssue.severity()), settings));
     issue.setSummary(generateIssueSummary(sonarIssue));
     issue.setDescription(generateIssueDescription(sonarIssue, settings));
+    issue.setAssignee(settings.getString(JiraConstants.JIRA_ASSIGNEE));
     if (settings.hasKey(JiraConstants.JIRA_ISSUE_COMPONENT_ID)) {
       String componentId = settings.getString(JiraConstants.JIRA_ISSUE_COMPONENT_ID);
       RemoteComponent rc = new RemoteComponent();
