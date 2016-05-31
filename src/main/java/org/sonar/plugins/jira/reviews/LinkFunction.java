@@ -19,14 +19,15 @@
  */
 package org.sonar.plugins.jira.reviews;
 
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import com.google.common.annotations.VisibleForTesting;
+import java.rmi.RemoteException;
+
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
 import org.sonar.api.issue.action.Function;
 import org.sonar.plugins.jira.JiraConstants;
 
-import java.rmi.RemoteException;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
+import com.google.common.annotations.VisibleForTesting;
 
 public class LinkFunction implements Function, ServerExtension {
 
@@ -42,7 +43,7 @@ public class LinkFunction implements Function, ServerExtension {
   }
 
   protected void createJiraIssue(Context context) {
-    RemoteIssue issue;
+	BasicIssue issue;
     try {
       issue = jiraIssueCreator.createIssue(context.issue(), context.projectSettings());
     } catch (RemoteException e) {
@@ -76,11 +77,11 @@ public class LinkFunction implements Function, ServerExtension {
     }
   }
 
-  protected void createComment(RemoteIssue issue, Context context) {
+  protected void createComment(BasicIssue issue, Context context) {
     context.addComment(generateCommentText(issue, context));
   }
-
-  protected String generateCommentText(RemoteIssue issue, Context context) {
+  
+  protected String generateCommentText(BasicIssue issue, Context context) {
     StringBuilder message = new StringBuilder();
     message.append("Issue linked to JIRA issue: ");
     message.append(context.projectSettings().getString(JiraConstants.SERVER_URL_PROPERTY));

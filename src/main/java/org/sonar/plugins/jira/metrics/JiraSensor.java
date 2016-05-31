@@ -20,11 +20,12 @@
 
 package org.sonar.plugins.jira.metrics;
 
-import com.atlassian.jira.rpc.soap.client.JiraSoapService;
-import com.atlassian.jira.rpc.soap.client.RemoteFilter;
-import com.atlassian.jira.rpc.soap.client.RemoteIssue;
-import com.atlassian.jira.rpc.soap.client.RemotePriority;
-import com.google.common.collect.Maps;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +38,20 @@ import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.PropertiesBuilder;
 import org.sonar.api.resources.Project;
 import org.sonar.plugins.jira.JiraConstants;
+import org.sonar.plugins.jira.JiraService;
+import org.sonar.plugins.jira.JiraSession;
+import org.sonar.plugins.jira.rest.JiraRestSession;
 import org.sonar.plugins.jira.soap.JiraSoapSession;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.rmi.RemoteException;
-import java.util.Map;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
+import com.atlassian.jira.rest.client.api.domain.BasicPriority;
+import com.atlassian.jira.rest.client.api.domain.Filter;
+import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rpc.soap.client.JiraSoapService;
+import com.atlassian.jira.rpc.soap.client.RemoteFilter;
+import com.atlassian.jira.rpc.soap.client.RemoteIssue;
+import com.atlassian.jira.rpc.soap.client.RemotePriority;
+import com.google.common.collect.Maps;
 
 @Properties({
   @Property(
@@ -80,24 +89,26 @@ public class JiraSensor implements Sensor {
     return settings.getString(JiraConstants.FILTER_PROPERTY);
   }
 
+  private boolean isUseRestApi() {
+      return settings.getBoolean(JiraConstants.JIRA_USE_REST_PROPERTY);  
+  }
+  
   public boolean shouldExecuteOnProject(Project project) {
     if (missingMandatoryParameters()) {
       LOG.info("JIRA issues sensor will not run as some parameters are missing.");
     }
     return project.isRoot() && !missingMandatoryParameters();
   }
-
+  
   public void analyse(Project project, SensorContext context) {
-    try {
-      JiraSoapSession session = new JiraSoapSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
+    try (JiraSession session = getSession();) {
+      
       session.connect(getUsername(), getPassword());
-
-      JiraSoapService service = session.getJiraSoapService();
+      
+      JiraService service = session.getJiraService(null, settings);
       String authToken = session.getAuthenticationToken();
-
+      
       runAnalysis(context, service, authToken);
-
-      session.disconnect();
     } catch (RemoteException e) {
       LOG.error("Error accessing Jira web service, please verify the parameters", e);
     } catch (MalformedURLException e) {
@@ -105,14 +116,21 @@ public class JiraSensor implements Sensor {
     }
   }
 
-  protected void runAnalysis(SensorContext context, JiraSoapService service, String authToken) throws RemoteException {
-    Map<String, String> priorities = collectPriorities(service, authToken);
-    RemoteFilter filter = findJiraFilter(service, authToken);
-    Map<String, Integer> issuesByPriority = collectIssuesByPriority(service, authToken, filter);
+  private JiraSession getSession() throws MalformedURLException {
+      if(isUseRestApi())
+          return new JiraSoapSession(new URL(getServerUrl() + "/"));
+      else          
+		  return new JiraRestSession(new URL(getServerUrl() + "/rpc/soap/jirasoapservice-v2"));
+}
+
+protected void runAnalysis(SensorContext context, JiraService service, String authToken) throws RemoteException {
+    Map<Long, String> priorities = collectPriorities(service, authToken);
+    Filter filter = findJiraFilter(service, authToken);
+    Map<Long, Integer> issuesByPriority = collectIssuesByPriority(service, authToken, filter);
 
     double total = 0;
     PropertiesBuilder<String, Integer> distribution = new PropertiesBuilder<String, Integer>();
-    for (Map.Entry<String, Integer> entry : issuesByPriority.entrySet()) {
+    for (Map.Entry<Long, Integer> entry : issuesByPriority.entrySet()) {
       total += entry.getValue();
       distribution.add(priorities.get(entry.getKey()), entry.getValue());
     }
@@ -121,19 +139,19 @@ public class JiraSensor implements Sensor {
     saveMeasures(context, url, total, distribution.buildData());
   }
 
-  protected Map<String, String> collectPriorities(JiraSoapService service, String authToken) throws RemoteException {
-    Map<String, String> priorities = Maps.newHashMap();
-    for (RemotePriority priority : service.getPriorities(authToken)) {
+  protected Map<Long, String> collectPriorities(JiraService service, String authToken) throws RemoteException {
+    Map<Long, String> priorities = Maps.newHashMap();
+    for (BasicPriority priority : service.getPriorities(authToken)) {
       priorities.put(priority.getId(), priority.getName());
     }
     return priorities;
   }
 
-  protected Map<String, Integer> collectIssuesByPriority(JiraSoapService service, String authToken, RemoteFilter filter) throws RemoteException {
-    Map<String, Integer> issuesByPriority = Maps.newHashMap();
-    RemoteIssue[] issues = service.getIssuesFromFilter(authToken, filter.getId());
-    for (RemoteIssue issue : issues) {
-      String priority = issue.getPriority();
+  protected Map<Long, Integer> collectIssuesByPriority(JiraService service, String authToken, Filter filter) throws RemoteException {
+    Map<Long, Integer> issuesByPriority = Maps.newHashMap();
+    List<Issue> issues = service.getIssuesFromFilter(authToken, filter.getId().toString());
+    for (Issue issue : issues) {
+      Long priority = issue.getPriority().getId();
       if (!issuesByPriority.containsKey(priority)) {
         issuesByPriority.put(priority, 1);
       } else {
@@ -143,16 +161,16 @@ public class JiraSensor implements Sensor {
     return issuesByPriority;
   }
 
-  protected RemoteFilter findJiraFilter(JiraSoapService service, String authToken) throws RemoteException {
-    RemoteFilter filter = null;
-    RemoteFilter[] filters;
+  protected Filter findJiraFilter(JiraService service, String authToken) throws RemoteException {
+    Filter filter = null;
+    List<Filter> filters;
     try {
       filters = service.getFavouriteFilters(authToken);
     } catch (Exception e) {
       // for Jira prior to 3.13
       filters = service.getSavedFilters(authToken);
     }
-    for (RemoteFilter f : filters) {
+    for (Filter f : filters) {
       if (getFilterName().equals(f.getName())) {
         filter = f;
         continue;

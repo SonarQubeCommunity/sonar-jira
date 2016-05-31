@@ -12,3 +12,5 @@ target/
 .project
 .settings
 
+#integration test configuration
+sonar.test.properties
