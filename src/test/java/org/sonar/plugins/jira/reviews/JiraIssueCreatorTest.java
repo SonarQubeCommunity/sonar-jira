@@ -209,6 +209,27 @@ public class JiraIssueCreatorTest {
   }
 
   @Test
+  public void shouldInitRemoteIssueWithAssignee() throws Exception {
+    // Given that
+    settings.setProperty(JiraConstants.JIRA_ASSIGNEE, "JohnDoe");
+    RemoteIssue expectedIssue = new RemoteIssue();
+    expectedIssue.setProject("TEST");
+    expectedIssue.setType("3");
+    expectedIssue.setPriority("4");
+    expectedIssue.setSummary("SonarQube Issue #ABCD - Avoid cycle between java packages");
+    expectedIssue.setDescription("Issue detail:\n{quote}\nThe Cyclomatic Complexity of this method is 14 which is greater than 10 authorized.\n" +
+            "{quote}\n\n\nCheck it on SonarQube: http://my.sonar.com/issue/show/ABCD");
+    expectedIssue.setAssignee("JohnDoe");
+
+    // Verify
+    RemoteIssue returnedIssue = jiraIssueCreator.initRemoteIssue(sonarIssue, settings);
+
+    assertThat(returnedIssue.getSummary()).isEqualTo(expectedIssue.getSummary());
+    assertThat(returnedIssue.getDescription()).isEqualTo(expectedIssue.getDescription());
+    assertThat(returnedIssue).isEqualTo(expectedIssue);
+  }
+
+  @Test
   public void shouldInitRemoteIssueWithComponent() throws Exception {
     // Given that
     settings.setProperty(JiraConstants.JIRA_ISSUE_COMPONENT_ID, "123");
